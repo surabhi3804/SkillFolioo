@@ -1,0 +1,230 @@
+.signin-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 40px 24px;
+}
+.signin-bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+  pointer-events: none;
+}
+.signin-bg-orb.orb-1 {
+  width: 400px; height: 400px;
+  background: var(--primary);
+  top: -80px; right: -80px;
+}
+.signin-bg-orb.orb-2 {
+  width: 300px; height: 300px;
+  background: var(--accent);
+  bottom: -60px; left: -60px;
+}
+
+.signin-card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 48px 44px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+
+.signin-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+.brand-icon-lg {
+  width: 44px; height: 44px;
+  background: var(--primary);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+}
+.brand-name-lg {
+  font-family: 'Poppins', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ── Tabs ── */
+.signin-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  background: rgba(124, 58, 237, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+}
+.signin-tab {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+.signin-tab.active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
+}
+.signin-tab:not(.active):hover {
+  color: var(--primary);
+  background: rgba(124, 58, 237, 0.08);
+}
+
+.signin-title {
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.signin-subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+/* ── API Error ── */
+.api-error-msg {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.signin-form { display: flex; flex-direction: column; gap: 0; }
+.form-group { margin-bottom: 18px; }
+
+.password-wrap { position: relative; }
+.show-pass-btn {
+  position: absolute;
+  right: 12px; top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+.show-pass-btn:hover { color: var(--primary); }
+
+.input-error { border-color: var(--error) !important; }
+.field-error {
+  font-size: 13px;
+  color: var(--error);
+  margin-top: 5px;
+  display: block;
+}
+
+.signin-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.signin-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+.signin-loading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.loader-dot {
+  width: 8px; height: 8px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
+  animation: pulse 1s ease infinite;
+}
+.loader-dot:nth-child(2) { animation-delay: 0.15s; }
+.loader-dot:nth-child(3) { animation-delay: 0.3s; }
+
+/* ── Switch link ── */
+.signin-switch {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 20px;
+  margin-bottom: 0;
+}
+.signin-switch-btn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  padding: 0;
+  text-decoration: underline;
+}
+.signin-switch-btn:hover { opacity: 0.8; }
+
+.signin-footer-note {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-light);
+  margin-top: 12px;
+  line-height: 1.6;
+}
+
+/* ── Builder save row (used in BuilderPage) ── */
+.builder-save-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+.builder-save-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: rgba(124, 58, 237, 0.15);
+  border: 1px solid rgba(124, 58, 237, 0.4);
+  color: #a78bfa;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.builder-save-btn:hover:not(:disabled) {
+  background: rgba(124, 58, 237, 0.3);
+  color: #fff;
+}
+.builder-save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.save-error { color: #fca5a5; font-size: 0.8rem; }
+
+@media (max-width: 500px) {
+  .signin-card { padding: 32px 20px; }
+  .signin-title { font-size: 22px; }
+}
