@@ -44,9 +44,7 @@ function AppInner() {
           <Route path="/skill-analytics" element={
             <ProtectedRoute><SkillAnalyticsPage /></ProtectedRoute>
           } />
-          <Route path="/ai-assistant" element={
-            <ProtectedRoute><AIAssistantPage /></ProtectedRoute>
-          } />
+          <Route path="/chatbot" element={<Chatbot />} />
 
           {/* Portfolio flow (NEW) */}
           <Route path="/portfolio/templates" element={

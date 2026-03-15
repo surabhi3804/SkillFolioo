@@ -22,20 +22,20 @@ app.use('/api/', limiter);
 // Debug route loading
 const authRoute      = require('./routes/auth');
 const portfolioRoute = require('./routes/portfolio');
-const aiRoute        = require('./routes/ai');
+const chatbotRoute = require("./routes/chatbot");
 const atsRoute       = require('./routes/ats');
 const skillsRoute    = require('./routes/skills');
 
 console.log('auth route type:',      typeof authRoute);
 console.log('portfolio route type:', typeof portfolioRoute);
-console.log('ai route type:',        typeof aiRoute);
+console.log('chatbot route type:',        typeof chatbotRoute);
 console.log('ats route type:',       typeof atsRoute);
 console.log('skills route type:',    typeof skillsRoute);
 
 // Routes
 app.use('/api/auth',      authRoute);
 app.use('/api/portfolio', portfolioRoute);
-app.use('/api/ai',        aiRoute);
+app.use('/api/chatbot',        chatbotRoute);
 app.use('/api/ats',       atsRoute);
 app.use('/api/skills',    skillsRoute);
 

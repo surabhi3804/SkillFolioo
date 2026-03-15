@@ -1,0 +1,62 @@
+
+{
+  "weak_verbs": {
+    "managed": ["led", "directed", "oversaw", "spearheaded"],
+    "created": ["engineered", "architected", "designed", "developed"],
+    "improved": ["optimized", "enhanced", "streamlined", "elevated"],
+    "worked": ["collaborated", "contributed", "partnered", "engaged"],
+    "helped": ["facilitated", "supported", "enabled", "assisted"],
+    "did": ["executed", "delivered", "drove", "championed"],
+    "made": ["produced", "built", "crafted", "developed"],
+    "used": ["leveraged", "implemented", "deployed", "utilized"],
+    "increased": ["grew", "boosted", "scaled", "amplified"],
+    "reduced": ["cut", "minimized", "eliminated", "decreased"],
+    "built": ["engineered", "architected","programmed","developed"],
+    "wrote": ["authored", "crafted", "produced", "developed"],
+    "handled": ["administered", "coordinated", "managed", "oversaw"],
+    "fixed": ["resolved", "debugged", "remediated", "addressed"],
+    "tested": ["validated", "verified", "evaluated", "assessed"],
+    "learned": ["mastered", "acquired proficiency in", "developed expertise in"],
+    "studied": ["researched", "investigated", "analyzed"]
+  },
+  "filler_words": [
+    "basically", "kinda", "sorta", "just", "really",
+    "very", "a bit", "like", "you know", "stuff",
+    "things", "kind of", "sort of", "a lot of",
+    "pretty much", "actually", "literally", "honestly"
+  ],
+  "informal_to_formal": {
+    "in charge of": "responsible for managing",
+    "worked with": "collaborated with",
+    "helped out": "supported",
+    "a lot": "significantly",
+    "tons of": "extensive",
+    "way better": "significantly improved",
+    "got rid of": "eliminated",
+    "looked into": "investigated",
+    "came up with": "developed",
+    "put together": "assembled",
+    "set up": "configured",
+    "looked after": "managed",
+    "teamed up": "collaborated",
+    "kept track of": "monitored",
+    "dealt with": "managed"
+  },
+  "metric_suggestions": [
+    "resulting in a X% improvement in performance",
+    "reducing processing time by X hours per week",
+    "increasing system efficiency by X%",
+    "serving X+ active users",
+    "saving approximately $X in operational costs",
+    "achieving X% test coverage",
+    "reducing bug count by X%",
+    "improving load time by Xms"
+  ],
+  "domain_keywords": {
+    "web": ["react", "node", "html", "css", "javascript", "frontend", "backend", "api", "website"],
+    "data": ["python", "pandas", "numpy", "analysis", "dataset", "csv", "visualization"],
+    "ml": ["machine learning", "model", "training", "accuracy", "tensorflow", "sklearn", "nlp"],
+    "database": ["mongodb", "sql", "mysql", "database", "query", "schema"],
+    "devops": ["docker", "git", "deployment", "server", "cloud", "aws"]
+  }
+}
