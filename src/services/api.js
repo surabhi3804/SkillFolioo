@@ -1,49 +1,64 @@
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+/* ─── Helper ────────────────────────────────────────────────── */
 const getToken = () => localStorage.getItem('skillfolio_token');
 
-const request = async (endpoint, options = {}) => {
-  const token = getToken();
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
-    },
-    ...options,
-  };
+const request = async (method, endpoint, body = null) => {
+  const headers = { 'Content-Type': 'application/json' };
+  const token   = getToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const config = { method, headers };
+  if (body) config.body = JSON.stringify(body);
+
   const res = await fetch(`${BASE_URL}${endpoint}`, config);
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Something went wrong');
+
+  if (!res.ok) {
+    throw new Error(data.message || `Request failed: ${res.status}`);
+  }
+
   return data;
 };
 
+/* ─── Auth API ───────────────────────────────────────────────── */
 export const authAPI = {
-  register: (body) => request('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
-  login:    (body) => request('/auth/login',    { method: 'POST', body: JSON.stringify(body) }),
-  getMe:    ()     => request('/auth/me'),
+  register: (payload) => request('POST', '/auth/register', payload),
+  login:    (payload) => request('POST', '/auth/login',    payload),
+  getMe:    ()        => request('GET',  '/auth/me'),
 };
 
+/* ─── Portfolio API ──────────────────────────────────────────── */
 export const portfolioAPI = {
-  get:    ()     => request('/portfolio'),
-  update: (body) => request('/portfolio', { method: 'PUT', body: JSON.stringify(body) }),
-  publish: ()    => request('/portfolio/publish', { method: 'POST' }),
+  // GET  /api/portfolio  — load saved portfolio for logged-in user
+  get: () => request('GET', '/portfolio'),
+
+  // PUT  /api/portfolio  — save / update portfolio data
+  update: (payload) => request('PUT', '/portfolio', payload),
+
+  // POST /api/portfolio/publish — publish and get a public URL
+  publish: () => request('POST', '/portfolio/publish'),
+
+  // GET  /api/portfolio/public/:slug — public, no auth needed
+  getPublic: (slug) => request('GET', `/portfolio/public/${slug}`),
 };
 
-export const aiAPI = {
-  chat:               (body) => request('/ai/chat',                { method: 'POST', body: JSON.stringify(body) }),
-  improveBio:         (body) => request('/ai/improve-bio',         { method: 'POST', body: JSON.stringify(body) }),
-  improveDescription: (body) => request('/ai/improve-description', { method: 'POST', body: JSON.stringify(body) }),
-  suggestSkills:      (body) => request('/ai/suggest-skills',      { method: 'POST', body: JSON.stringify(body) }),
-};
-
+/* ─── ATS API ────────────────────────────────────────────────── */
 export const atsAPI = {
-  score:          (body) => request('/ats/score',    { method: 'POST', body: JSON.stringify(body) }),
-  extractKeywords:(body) => request('/ats/keywords', { method: 'POST', body: JSON.stringify(body) }),
+  score: (payload) => request('POST', '/ats/score', payload),
 };
 
+/* ─── Skills API ─────────────────────────────────────────────── */
 export const skillsAPI = {
-  analytics:        ()     => request('/skills/analytics'),
-  marketComparison: (body) => request('/skills/market-comparison', { method: 'POST', body: JSON.stringify(body) }),
-  roadmap:          (body) => request('/skills/roadmap',           { method: 'POST', body: JSON.stringify(body) }),
+  analyze: (payload) => request('POST', '/skills/analyze', payload),
+};
+
+/* ─── Chatbot API ────────────────────────────────────────────── */
+export const chatbotAPI = {
+  send: (payload) => request('POST', '/chatbot', payload),
+};
+
+/* ─── AI Assistant API ───────────────────────────────────────── */
+export const aiAPI = {
+  assist: (payload) => request('POST', '/chatbot', payload),
 };

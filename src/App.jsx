@@ -12,12 +12,13 @@ import ResumePreviewPage from './pages/ResumePreviewPage';
 import ATSScorePage from './pages/ATSScorePage';
 import SkillAnalyticsPage from './pages/SkillAnalyticsPage';
 import AIAssistantPage from './pages/AIAssistantPage';
-// --- Portfolio pages (NEW) ---
 import PortfolioTemplatesPage from './pages/PortfolioTemplatesPage';
 import PortfolioCustomizerPage from './pages/PortfolioCustomizerPage';
 import PortfolioPreviewPage from './pages/PortfolioPreviewPage';
+import PublicPortfolioPage from './pages/PublicPortfolioPage';
 import './styles/global.css';
 
+// ─── Inner app layout (with Navbar + ChatBot) ────────────────
 function AppInner() {
   return (
     <div className="app">
@@ -25,38 +26,23 @@ function AppInner() {
       <main>
         <Routes>
           {/* Public */}
-          <Route path="/" element={<HomePage />} />
+          <Route path="/"       element={<HomePage />} />
           <Route path="/signin" element={<SignInPage />} />
 
           {/* Resume flow */}
-          <Route path="/templates" element={
-            <ProtectedRoute><TemplatesPage /></ProtectedRoute>
-          } />
-          <Route path="/builder" element={
-            <ProtectedRoute><BuilderPage /></ProtectedRoute>
-          } />
-          <Route path="/preview" element={
-            <ProtectedRoute><ResumePreviewPage /></ProtectedRoute>
-          } />
-          <Route path="/ats-score" element={
-            <ProtectedRoute><ATSScorePage /></ProtectedRoute>
-          } />
-          <Route path="/skill-analytics" element={
-            <ProtectedRoute><SkillAnalyticsPage /></ProtectedRoute>
-          } />
-          <Route path="/chatbot" element={<Chatbot />} />
+          <Route path="/templates"       element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
+          <Route path="/builder"         element={<ProtectedRoute><BuilderPage /></ProtectedRoute>} />
+          <Route path="/preview"         element={<ProtectedRoute><ResumePreviewPage /></ProtectedRoute>} />
+          <Route path="/ats-score"       element={<ProtectedRoute><ATSScorePage /></ProtectedRoute>} />
+          <Route path="/skill-analytics" element={<ProtectedRoute><SkillAnalyticsPage /></ProtectedRoute>} />
+          <Route path="/chatbot"         element={<ChatBot />} />
 
-          {/* Portfolio flow (NEW) */}
-          <Route path="/portfolio/templates" element={
-            <ProtectedRoute><PortfolioTemplatesPage /></ProtectedRoute>
-          } />
-          <Route path="/portfolio/customize" element={
-            <ProtectedRoute><PortfolioCustomizerPage /></ProtectedRoute>
-          } />
-          <Route path="/portfolio/preview" element={
-            <ProtectedRoute><PortfolioPreviewPage /></ProtectedRoute>
-          } />
+          {/* Portfolio flow */}
+          <Route path="/portfolio/templates" element={<ProtectedRoute><PortfolioTemplatesPage /></ProtectedRoute>} />
+          <Route path="/portfolio/customize" element={<ProtectedRoute><PortfolioCustomizerPage /></ProtectedRoute>} />
+          <Route path="/portfolio/preview"   element={<ProtectedRoute><PortfolioPreviewPage /></ProtectedRoute>} />
 
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -65,11 +51,18 @@ function AppInner() {
   );
 }
 
+// ─── Root App — /p/:slug MUST be before /* ────────────────────
 function App() {
   return (
     <BrowserRouter>
       <AppProvider>
-        <AppInner />
+        <Routes>
+          {/* ✅ Public portfolio — no Navbar, no ChatBot, no auth */}
+          <Route path="/p/:slug" element={<PublicPortfolioPage />} />
+
+          {/* ✅ Everything else gets the full app shell */}
+          <Route path="/*" element={<AppInner />} />
+        </Routes>
       </AppProvider>
     </BrowserRouter>
   );

@@ -1,79 +1,90 @@
 const mongoose = require('mongoose');
 
-const portfolioSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  title:        { type: String, default: 'My Portfolio' },
-  template:     { type: String, default: 'modern' },
-  isPublished:  { type: Boolean, default: false },
-  slug:         { type: String, unique: true, sparse: true },
+const portfolioSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      unique: true,
+    },
 
-  personalInfo: {
-    fullName:   String,
-    title:      String,
-    bio:        String,
-    email:      String,
-    phone:      String,
-    location:   String,
-    website:    String,
-    linkedin:   String,
-    github:     String,
-    avatar:     String,
+    personalInfo: {
+      fullName:  { type: String, default: '' },
+      title:     { type: String, default: '' },
+      email:     { type: String, default: '' },
+      phone:     { type: String, default: '' },
+      location:  { type: String, default: '' },
+      linkedin:  { type: String, default: '' },
+      github:    { type: String, default: '' },
+      website:   { type: String, default: '' },
+      bio:       { type: String, default: '' },
+    },
+
+    skills: [
+      {
+        name:     { type: String, default: '' },
+        level:    { type: Number, default: 70 },
+        category: { type: String, default: 'Technical' },
+      },
+    ],
+
+    experience: [
+      {
+        role:        { type: String, default: '' },
+        company:     { type: String, default: '' },
+        description: { type: String, default: '' },
+        startDate:   { type: String, default: '' },
+        endDate:     { type: String, default: '' },
+        current:     { type: Boolean, default: false },
+      },
+    ],
+
+    education: [
+      {
+        degree:      { type: String, default: '' },
+        institution: { type: String, default: '' },
+        field:       { type: String, default: '' },
+        grade:       { type: String, default: '' },
+        startDate:   { type: String, default: '' },
+        endDate:     { type: String, default: '' },
+      },
+    ],
+
+    projects: [
+      {
+        name:        { type: String, default: '' },
+        description: { type: String, default: '' },
+        tech:        [{ type: String }],
+        liveUrl:     { type: String, default: '' },
+        githubUrl:   { type: String, default: '' },
+      },
+    ],
+
+    certifications: [
+      {
+        name:   { type: String, default: '' },
+        issuer: { type: String, default: '' },
+        date:   { type: String, default: '' },
+        url:    { type: String, default: '' },
+      },
+    ],
+
+    // Portfolio display settings
+    style: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+
+    // Publishing
+    isPublished: { type: Boolean, default: false },
+    slug: {
+      type: String,
+      unique: true,
+      sparse: true, // allows multiple null values
+    },
   },
-
-  skills: [{
-    name:       String,
-    level:      { type: Number, min: 0, max: 100 },
-    category:   String,
-  }],
-
-  experience: [{
-    company:    String,
-    role:       String,
-    startDate:  String,
-    endDate:    String,
-    current:    Boolean,
-    description:String,
-  }],
-
-  education: [{
-    institution:String,
-    degree:     String,
-    field:      String,
-    startDate:  String,
-    endDate:    String,
-    grade:      String,
-  }],
-
-  projects: [{
-    name:       String,
-    description:String,
-    tech:       [String],
-    liveUrl:    String,
-    githubUrl:  String,
-    image:      String,
-  }],
-
-  certifications: [{
-    name:       String,
-    issuer:     String,
-    date:       String,
-    url:        String,
-  }],
-
-  customization: {
-    primaryColor:   { type: String, default: '#6366f1' },
-    secondaryColor: { type: String, default: '#8b5cf6' },
-    fontFamily:     { type: String, default: 'Inter' },
-    darkMode:       { type: Boolean, default: false },
-  },
-
-  createdAt:  { type: Date, default: Date.now },
-  updatedAt:  { type: Date, default: Date.now },
-});
-
-portfolioSchema.pre('save', function (next) {
-  this.updatedAt = Date.now();
-  next();
-});
+  { timestamps: true }
+);
 
 module.exports = mongoose.model('Portfolio', portfolioSchema);

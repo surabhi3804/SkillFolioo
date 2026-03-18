@@ -1,19 +1,21 @@
-.resume-preview-page {
-  min-height: 100vh;
+/* ── PortfolioPreviewPage.css ──────────────────────────────── */
+
+.pfprev-page {
   padding: 24px 0 60px;
   background: var(--bg);
+  min-height: 100vh;
 }
 
-/* ── Top bar ── */
-.preview-topbar {
+/* Top bar */
+.pfprev-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   gap: 12px;
   flex-wrap: wrap;
 }
-.preview-topbar-center {
+.pfprev-topbar-center {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -29,68 +31,101 @@
   font-size: 12px;
   font-weight: 500;
 }
-.preview-actions {
+.pfprev-actions { display: flex; gap: 10px; align-items: center; }
+
+/* Error banner */
+.publish-error {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.35);
+  color: #FCA5A5;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+/* Published banner */
+.published-banner {
   display: flex;
-  gap: 10px;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: rgba(16,185,129,0.08);
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
 }
-.no-template-msg {
-  text-align: center;
-  color: var(--text-muted);
-  padding: 20px;
-  font-size: 15px;
-}
-.link-btn {
-  background: none;
-  border: none;
-  color: var(--primary);
-  cursor: pointer;
-  font-size: inherit;
-  text-decoration: underline;
+.published-banner-left { display: flex; align-items: center; gap: 12px; }
+.pub-icon { font-size: 24px; }
+.pub-title { font-size: 15px; font-weight: 600; color: var(--text); margin: 0 0 3px; }
+.pub-url { font-size: 13px; color: #10B981; text-decoration: none; display: flex; align-items: center; gap: 4px; }
+.pub-url:hover { text-decoration: underline; }
+.pub-actions { display: flex; gap: 10px; }
+.pub-copy-btn { font-size: 13px; display: flex; align-items: center; gap: 5px; }
+.pub-visit-btn { font-size: 13px; display: flex; align-items: center; gap: 5px; padding: 8px 16px; }
+
+/* ── Browser mock ─────────────────────────────────────────── */
+.browser-wrap {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
 }
 
-/* ── Resume sheet wrapper ── */
-.resume-preview-wrap {
+.browser-chrome {
   display: flex;
-  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #1E293B;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.browser-dots { display: flex; gap: 6px; }
+.browser-dots span { width: 11px; height: 11px; border-radius: 50%; display: block; }
+.browser-url-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 6px;
+  padding: 5px 10px;
+  color: rgba(255,255,255,0.45);
+  font-size: 12px;
 }
 
-/* ── The white paper sheet ── */
-.resume-sheet {
-  width: 794px;          /* A4 at 96dpi */
-  min-height: 1123px;
-  background: #fff;
-  padding: 36px 44px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
-  border-radius: 4px;
-  box-sizing: border-box;
-  color: #111;
+/* ── The actual portfolio site inside the browser ─────────── */
+.portfolio-site {
+  max-height: 75vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
-/* Sidebar Pro — no extra padding, handled inline */
-.resume-sheet[data-template="sidebar-pro"],
-.resume-sheet[data-template="modern-header"] {
-  padding: 0;
+/* Custom scrollbar inside portfolio preview */
+.portfolio-site::-webkit-scrollbar { width: 6px; }
+.portfolio-site::-webkit-scrollbar-track { background: transparent; }
+.portfolio-site::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.4); border-radius: 3px; }
+.portfolio-site::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.65); }
+
+/* Responsive */
+@media (max-width: 760px) {
+  .pfprev-topbar { flex-direction: column; align-items: stretch; }
+  .pfprev-actions { justify-content: flex-end; }
+  .portfolio-site { max-height: 65vh; }
 }
 
-@media (max-width: 860px) {
-  .resume-sheet {
-    width: 100%;
-    min-height: unset;
-    padding: 24px 18px;
-  }
+/* Publish dots animation */
+.publish-dots { display: flex; gap: 4px; align-items: center; }
+.publish-dots span {
+  width: 6px; height: 6px; border-radius: 50%; background: #fff;
+  animation: pulse-dot 1.2s infinite;
 }
-
-@media print {
-  .resume-preview-page,
-  .preview-topbar,
-  .resume-preview-wrap {
-    all: unset;
-  }
-  .resume-sheet {
-    width: 100%;
-    box-shadow: none;
-    border-radius: 0;
-    padding: 0;
-  }
+.publish-dots span:nth-child(2) { animation-delay: 0.2s; }
+.publish-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pulse-dot {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
 }
