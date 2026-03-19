@@ -11,7 +11,7 @@ import BuilderPage from './pages/BuilderPage';
 import ResumePreviewPage from './pages/ResumePreviewPage';
 import ATSScorePage from './pages/ATSScorePage';
 import SkillAnalyticsPage from './pages/SkillAnalyticsPage';
-import AIAssistantPage from './pages/AIAssistantPage';
+import ChatbotPage from './pages/chatbot';
 import PortfolioTemplatesPage from './pages/PortfolioTemplatesPage';
 import PortfolioCustomizerPage from './pages/PortfolioCustomizerPage';
 import PortfolioPreviewPage from './pages/PortfolioPreviewPage';
@@ -35,7 +35,7 @@ function AppInner() {
           <Route path="/preview"         element={<ProtectedRoute><ResumePreviewPage /></ProtectedRoute>} />
           <Route path="/ats-score"       element={<ProtectedRoute><ATSScorePage /></ProtectedRoute>} />
           <Route path="/skill-analytics" element={<ProtectedRoute><SkillAnalyticsPage /></ProtectedRoute>} />
-          <Route path="/chatbot"         element={<ChatBot />} />
+          <Route path="/chatbot"         element={<ProtectedRoute><ChatbotPage /></ProtectedRoute>} />
 
           {/* Portfolio flow */}
           <Route path="/portfolio/templates" element={<ProtectedRoute><PortfolioTemplatesPage /></ProtectedRoute>} />
@@ -57,10 +57,10 @@ function App() {
     <BrowserRouter>
       <AppProvider>
         <Routes>
-          {/* ✅ Public portfolio — no Navbar, no ChatBot, no auth */}
+          {/* Public portfolio — no Navbar, no ChatBot, no auth */}
           <Route path="/p/:slug" element={<PublicPortfolioPage />} />
 
-          {/* ✅ Everything else gets the full app shell */}
+          {/* Everything else gets the full app shell */}
           <Route path="/*" element={<AppInner />} />
         </Routes>
       </AppProvider>

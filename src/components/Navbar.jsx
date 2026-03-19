@@ -21,7 +21,7 @@ const Navbar = () => {
     { label: 'Resume Builder', path: '/builder' },
     { label: 'ATS Score', path: '/ats-score' },
     { label: 'Skill Analytics', path: '/skill-analytics' },
-    { label: 'AI Assistant', path: '/ai-assistant' },
+    { label: 'AI Assistant', path: '/chatbot' },
   ] : [];
 
   const portfolioLinks = [
