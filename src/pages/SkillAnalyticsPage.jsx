@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { TARGET_ROLES, ROLE_SKILLS, ALL_SKILLS } from '../data/staticData';
-import { skillsAPI } from '../services/api';
 import { BarChart3, Check, Plus, Sparkles, TrendingUp, AlertCircle, CheckCircle, Target, X, Zap } from 'lucide-react';
 import './SkillAnalyticsPage.css';
 
@@ -32,19 +31,133 @@ const SkillAnalyticsPage = () => {
   const addSkill    = (skill) => { setResumeData(prev => ({ ...prev, skills: [...(prev.skills || []), skill] })); setQuery(''); };
   const removeSkill = (skill) => { setResumeData(prev => ({ ...prev, skills: (prev.skills || []).filter(s => s !== skill) })); };
 
-  const handleMarketAnalysis = async () => {
+  // ── 100% free client-side market analysis (no API key needed) ──
+  const MARKET_DATA = {
+    // demand: high/medium/low  trend: rising/stable/declining
+    'Python':        { demand: 'high',   trend: 'rising'    },
+    'JavaScript':    { demand: 'high',   trend: 'stable'    },
+    'TypeScript':    { demand: 'high',   trend: 'rising'    },
+    'React':         { demand: 'high',   trend: 'stable'    },
+    'Node.js':       { demand: 'high',   trend: 'stable'    },
+    'Next.js':       { demand: 'high',   trend: 'rising'    },
+    'SQL':           { demand: 'high',   trend: 'stable'    },
+    'AWS':           { demand: 'high',   trend: 'rising'    },
+    'Docker':        { demand: 'high',   trend: 'rising'    },
+    'Kubernetes':    { demand: 'high',   trend: 'rising'    },
+    'Git':           { demand: 'high',   trend: 'stable'    },
+    'REST APIs':     { demand: 'high',   trend: 'stable'    },
+    'GraphQL':       { demand: 'medium', trend: 'rising'    },
+    'Java':          { demand: 'high',   trend: 'stable'    },
+    'Go':            { demand: 'high',   trend: 'rising'    },
+    'Rust':          { demand: 'medium', trend: 'rising'    },
+    'C++':           { demand: 'medium', trend: 'stable'    },
+    'Vue.js':        { demand: 'medium', trend: 'stable'    },
+    'TailwindCSS':   { demand: 'high',   trend: 'rising'    },
+    'CSS3':          { demand: 'medium', trend: 'stable'    },
+    'HTML5':         { demand: 'medium', trend: 'stable'    },
+    'FastAPI':       { demand: 'high',   trend: 'rising'    },
+    'Django':        { demand: 'medium', trend: 'stable'    },
+    'TensorFlow':    { demand: 'high',   trend: 'rising'    },
+    'PyTorch':       { demand: 'high',   trend: 'rising'    },
+    'Pandas':        { demand: 'high',   trend: 'stable'    },
+    'NumPy':         { demand: 'medium', trend: 'stable'    },
+    'LLMs':          { demand: 'high',   trend: 'rising'    },
+    'GCP':           { demand: 'high',   trend: 'rising'    },
+    'CI/CD':         { demand: 'high',   trend: 'rising'    },
+    'Terraform':     { demand: 'high',   trend: 'rising'    },
+    'Figma':         { demand: 'high',   trend: 'rising'    },
+    'Agile':         { demand: 'medium', trend: 'stable'    },
+    'Jira':          { demand: 'medium', trend: 'stable'    },
+    'Postman':       { demand: 'medium', trend: 'stable'    },
+    'MongoDB':       { demand: 'medium', trend: 'stable'    },
+    'PostgreSQL':    { demand: 'high',   trend: 'rising'    },
+    'Redis':         { demand: 'high',   trend: 'rising'    },
+    'Linux':         { demand: 'high',   trend: 'stable'    },
+    'Spark':         { demand: 'medium', trend: 'stable'    },
+    'Kafka':         { demand: 'medium', trend: 'rising'    },
+    'Microservices': { demand: 'high',   trend: 'stable'    },
+    'Tailwind CSS':  { demand: 'high',   trend: 'rising'    },
+    'AI/ML':         { demand: 'high',   trend: 'rising'    },
+    'Machine Learning': { demand: 'high', trend: 'rising'  },
+    'Deep Learning': { demand: 'high',   trend: 'rising'    },
+    'Data Analysis': { demand: 'high',   trend: 'rising'    },
+  };
+
+  // High-demand skills recommended per role
+  const ROLE_RECOMMENDATIONS = {
+    'frontend-developer':    ['TypeScript', 'Next.js', 'TailwindCSS', 'GraphQL', 'Vitest'],
+    'backend-developer':     ['Go', 'PostgreSQL', 'Redis', 'Kafka', 'Kubernetes'],
+    'fullstack-developer':   ['TypeScript', 'Next.js', 'PostgreSQL', 'Docker', 'Redis'],
+    'data-scientist':        ['PyTorch', 'LLMs', 'Spark', 'MLflow', 'Airflow'],
+    'aiml-engineer':         ['LLMs', 'PyTorch', 'TensorFlow', 'FastAPI', 'Kubernetes'],
+    'data-engineer':         ['Spark', 'Kafka', 'Airflow', 'dbt', 'Snowflake'],
+    'devops-engineer':       ['Kubernetes', 'Terraform', 'CI/CD', 'Prometheus', 'Helm'],
+    'cloud-engineer':        ['AWS', 'Terraform', 'Kubernetes', 'GCP', 'CI/CD'],
+    'mobile-developer':      ['React Native', 'Swift', 'Kotlin', 'Firebase', 'TypeScript'],
+    'product-manager':       ['Agile', 'Figma', 'SQL', 'Jira', 'A/B Testing'],
+    'uiux-designer':         ['Figma', 'User Research', 'Prototyping', 'CSS3', 'Accessibility'],
+    'cybersecurity-engineer':['Penetration Testing', 'SIEM', 'Zero Trust', 'IAM', 'OWASP'],
+    'qa-engineer':           ['Cypress', 'Playwright', 'Jest', 'CI/CD', 'Selenium'],
+    'embedded-engineer':     ['C++', 'Rust', 'RTOS', 'CAN Bus', 'FPGA'],
+    'blockchain-developer':  ['Solidity', 'Web3.js', 'Rust', 'Smart Contracts', 'Hardhat'],
+  };
+
+  const generateRecommendation = (fit, roleName, missingCount) => {
+    if (fit >= 80) return `Your skills are an excellent match for ${roleName} roles — you're well above the industry baseline. Focus on deepening expertise in your strongest areas and staying current with emerging tools to stay competitive.`;
+    if (fit >= 55) return `You have a solid foundation for ${roleName} roles with ${fit}% market alignment. Picking up ${missingCount} key missing skills could make you a top-tier candidate and significantly widen your job opportunities.`;
+    if (fit >= 30) return `You're building toward a ${roleName} profile. With ${missingCount} targeted skill additions, you can close the gap quickly — focus on the high-demand skills flagged below for the best return on your learning time.`;
+    return `Your current skillset is a starting point for ${roleName} roles. Consider a focused 3–6 month learning plan targeting the high-demand skills listed below — they will give you the fastest path to landing your first role.`;
+  };
+
+  const handleMarketAnalysis = () => {
     if (!userSkills.length) return;
     setMarketLoading(true);
     setMarketError('');
-    try {
-      const roleName = TARGET_ROLES.find(r => r.id === localRole)?.label || 'Software Developer';
-      const data = await skillsAPI.marketComparison({ skills: userSkills, jobTitle: roleName });
-      setMarketResult(data.comparison);
-    } catch (err) {
-      setMarketError('Could not connect to backend. Make sure server is running on port 5000.');
-    } finally {
-      setMarketLoading(false);
-    }
+    setMarketResult(null);
+    setAiTab('market');
+
+    // Simulate a brief "thinking" delay for UX
+    setTimeout(() => {
+      try {
+        const roleName = TARGET_ROLES.find(r => r.id === localRole)?.label || 'Software Developer';
+
+        // Score each user skill against market data
+        const marketDemand = userSkills.map(skill => {
+          const key = Object.keys(MARKET_DATA).find(k => k.toLowerCase() === skill.toLowerCase());
+          return key
+            ? { skill, ...MARKET_DATA[key] }
+            : { skill, demand: 'medium', trend: 'stable' }; // reasonable default for unknown skills
+        });
+
+        // Overall fit: weighted score (high=100, medium=60, low=25) averaged
+        const scoreMap = { high: 100, medium: 60, low: 25 };
+        const rawScore = marketDemand.reduce((sum, s) => sum + (scoreMap[s.demand] || 60), 0) / marketDemand.length;
+
+        // Boost if skills align well with target role
+        const roleBonus = localRole && localRole !== 'other'
+          ? Math.min(20, Math.round((presentSkills.length / Math.max(roleSkills.length, 1)) * 20))
+          : 0;
+        const overallMarketFit = Math.min(100, Math.round(rawScore * 0.8 + roleBonus));
+
+        // Missing high-demand skills for the role, not already in user's list
+        const roleRecs = ROLE_RECOMMENDATIONS[localRole] || ['TypeScript', 'Docker', 'PostgreSQL', 'CI/CD', 'Redis'];
+        const missingHighDemand = roleRecs
+          .filter(s => !userSkillsLower.includes(s.toLowerCase()))
+          .slice(0, 5);
+
+        setMarketResult({
+          overallMarketFit,
+          recommendation: generateRecommendation(overallMarketFit, roleName, missingHighDemand.length),
+          marketDemand,
+          missingHighDemand,
+        });
+      } catch (err) {
+        setMarketError('Analysis failed. Please try again.');
+        console.error(err);
+      } finally {
+        setMarketLoading(false);
+      }
+    }, 900);
   };
 
   const getDemandColor = (demand) =>
@@ -135,8 +248,16 @@ const SkillAnalyticsPage = () => {
                 disabled={marketLoading || userSkills.length === 0}
                 style={{ width: '100%' }}
               >
-                {marketLoading ? 'Analyzing...' : <><TrendingUp size={15} /> Analyze Market Demand</>}
+                {marketLoading
+                  ? 'Analyzing...'
+                  : <><TrendingUp size={15} /> Analyze Market Demand</>
+                }
               </button>
+              {userSkills.length === 0 && (
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 8, textAlign: 'center' }}>
+                  Add skills above to enable analysis
+                </p>
+              )}
             </div>
           </aside>
 
@@ -260,11 +381,16 @@ const SkillAnalyticsPage = () => {
                     <div className="card animate-fadeIn">
                       <div className="match-header">
                         <h3 className="card-section-title" style={{ marginBottom: 0 }}>
-                          Market Fit Score: <span style={{ color: marketResult.overallMarketFit >= 70 ? 'var(--success)' : 'var(--warning)' }}>{marketResult.overallMarketFit}/100</span>
+                          Market Fit Score:{' '}
+                          <span style={{ color: marketResult.overallMarketFit >= 70 ? 'var(--success)' : 'var(--warning)' }}>
+                            {marketResult.overallMarketFit}/100
+                          </span>
                         </h3>
                       </div>
                       {marketResult.recommendation && (
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: 10 }}>{marketResult.recommendation}</p>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: 10 }}>
+                          {marketResult.recommendation}
+                        </p>
                       )}
                     </div>
 
@@ -275,7 +401,9 @@ const SkillAnalyticsPage = () => {
                           <div key={i} className="market-skill-card">
                             <span className="market-skill-name">{item.skill}</span>
                             <span className="market-demand-badge" style={{ background: getDemandColor(item.demand) }}>{item.demand}</span>
-                            <span className="market-trend">{item.trend === 'rising' ? '↑' : item.trend === 'declining' ? '↓' : '→'} {item.trend}</span>
+                            <span className="market-trend">
+                              {item.trend === 'rising' ? '↑' : item.trend === 'declining' ? '↓' : '→'} {item.trend}
+                            </span>
                           </div>
                         ))}
                       </div>
