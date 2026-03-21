@@ -6,22 +6,21 @@ const AppContext = createContext(null);
 export const AppProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser]             = useState(null);
-  const [authLoading, setAuthLoading] = useState(true); // checking token on startup
+  const [authLoading, setAuthLoading] = useState(true);
 
-  // Shared user data — used by both resume and portfolio
   const [resumeData, setResumeData] = useState({
     name: '', professionalTitle: '', email: '', phone: '', city: '',
     linkedin: '', github: '', website: '', summary: '', education: [],
     workExperience: [], skills: [], projects: [], certifications: [], additionalInfo: '',
   });
 
-  // Resume-specific state
   const [selectedTemplate, setSelectedTemplate]   = useState(null);
   const [resumeStyle, setResumeStyle]             = useState({ color: '#7C3AED', font: 'Inter' });
-  const [targetRole, setTargetRole]               = useState('');
-  const [jobDescription, setJobDescription]       = useState('');
 
-  // Portfolio-specific state
+  // ── targetRoles replaces jobDescription & targetRole ──────────
+  // Stored as string[] to match what the backend and UI expect.
+  const [targetRoles, setTargetRoles] = useState([]);
+
   const [selectedPortfolioTemplate, setSelectedPortfolioTemplate] = useState(null);
   const [portfolioStyle, setPortfolioStyle] = useState({
     primaryColor: '#7C3AED', accentColor: '#06B6D4', bgColor: '#0F172A',
@@ -33,10 +32,9 @@ export const AppProvider = ({ children }) => {
   const [portfolioPublished, setPortfolioPublished] = useState(false);
   const [portfolioSlug, setPortfolioSlug]           = useState('');
 
-  // Chat
   const [chatOpen, setChatOpen] = useState(false);
 
-  // ─── On app start: restore session if token exists ──────
+  // ─── On app start: restore session if token exists ──────────
   useEffect(() => {
     const token = localStorage.getItem('skillfolio_token');
     if (!token) { setAuthLoading(false); return; }
@@ -45,7 +43,6 @@ export const AppProvider = ({ children }) => {
       .then(data => {
         setUser(data.user);
         setIsLoggedIn(true);
-        // load saved portfolio data into resumeData
         return portfolioAPI.get().catch(() => null);
       })
       .then(res => {
@@ -55,7 +52,7 @@ export const AppProvider = ({ children }) => {
       .finally(() => setAuthLoading(false));
   }, []);
 
-  // Map backend portfolio shape → resumeData shape
+  // Map backend portfolio → resumeData + restore templateId & style
   const _applyPortfolioToResume = (p) => {
     if (!p) return;
     const info = p.personalInfo || {};
@@ -88,10 +85,18 @@ export const AppProvider = ({ children }) => {
         name: c.name, issuer: c.issuer, date: c.date, credentialId: c.url || '',
       })) || prev.certifications,
     }));
+
+    // Restore targetRoles from saved portfolio if present
+    if (Array.isArray(p.targetRoles) && p.targetRoles.length > 0) {
+      setTargetRoles(p.targetRoles);
+    }
+
+    if (p.templateId) setSelectedPortfolioTemplate(p.templateId);
+    if (p.style && Object.keys(p.style).length > 0) setPortfolioStyle(prev => ({ ...prev, ...p.style }));
     if (p.isPublished) { setPortfolioPublished(true); setPortfolioSlug(p.slug || ''); }
   };
 
-  // Map resumeData shape → backend portfolio shape
+  // Map resumeData → backend portfolio shape
   const _resumeToPortfolio = () => ({
     personalInfo: {
       fullName:  resumeData.name,
@@ -123,10 +128,8 @@ export const AppProvider = ({ children }) => {
     })),
   });
 
-  // ─── AUTH ────────────────────────────────────────────────
+  // ─── AUTH ─────────────────────────────────────────────────────
   const login = async (email, password) => {
-    // If called with only email (old usage from SignInPage), just do a local login
-    // Full backend login is handled in SignInPage directly
     setIsLoggedIn(true);
     setUser({ email });
   };
@@ -153,15 +156,24 @@ export const AppProvider = ({ children }) => {
     localStorage.removeItem('skillfolio_token');
     setIsLoggedIn(false);
     setUser(null);
+    setTargetRoles([]);
     setPortfolioPublished(false);
     setPortfolioSlug('');
   };
 
-  // ─── SAVE PORTFOLIO ──────────────────────────────────────
+  // ─── SAVE PORTFOLIO ───────────────────────────────────────────
   const savePortfolioToBackend = async () => {
     const token = localStorage.getItem('skillfolio_token');
-    if (!token) return; // not logged in via backend, skip
-    const payload = _resumeToPortfolio();
+    if (!token) return;
+
+    const payload = {
+      ..._resumeToPortfolio(),
+      templateId:  selectedPortfolioTemplate,
+      style:       portfolioStyle,
+      // Persist targetRoles so they survive page refresh
+      targetRoles,
+    };
+
     await portfolioAPI.update(payload);
   };
 
@@ -172,8 +184,10 @@ export const AppProvider = ({ children }) => {
       resumeData, setResumeData,
       selectedTemplate, setSelectedTemplate,
       resumeStyle, setResumeStyle,
-      targetRole, setTargetRole,
-      jobDescription, setJobDescription,
+
+      // ── targetRoles (replaces jobDescription + targetRole) ──
+      targetRoles, setTargetRoles,
+
       selectedPortfolioTemplate, setSelectedPortfolioTemplate,
       portfolioStyle, setPortfolioStyle,
       portfolioPublished, setPortfolioPublished,

@@ -22,11 +22,7 @@ const generateSlug = async (baseName) => {
 exports.getPortfolio = async (req, res) => {
   try {
     const portfolio = await Portfolio.findOne({ user: req.user.id });
-
-    if (!portfolio) {
-      return res.json({ portfolio: null });
-    }
-
+    if (!portfolio) return res.json({ portfolio: null });
     res.json({ portfolio });
   } catch (err) {
     console.error('getPortfolio error:', err);
@@ -39,17 +35,21 @@ exports.updatePortfolio = async (req, res) => {
   try {
     const {
       personalInfo, skills, experience,
-      education, projects, certifications, style,
+      education, projects, certifications,
+      style, templateId,
     } = req.body;
 
     const updateData = {};
-    if (personalInfo)   updateData.personalInfo   = personalInfo;
-    if (skills)         updateData.skills         = skills;
-    if (experience)     updateData.experience     = experience;
-    if (education)      updateData.education      = education;
-    if (projects)       updateData.projects       = projects;
-    if (certifications) updateData.certifications = certifications;
-    if (style)          updateData.style          = style;
+    if (personalInfo)             updateData.personalInfo   = personalInfo;
+    if (skills)                   updateData.skills         = skills;
+    if (experience)               updateData.experience     = experience;
+    if (education)                updateData.education      = education;
+    if (projects)                 updateData.projects       = projects;
+    if (certifications)           updateData.certifications = certifications;
+    if (style)                    updateData.style          = style;
+    if (templateId !== undefined) updateData.templateId     = templateId;
+
+    console.log('💾 updatePortfolio — saving templateId:', templateId);
 
     const portfolio = await Portfolio.findOneAndUpdate(
       { user: req.user.id },
@@ -65,10 +65,15 @@ exports.updatePortfolio = async (req, res) => {
 };
 
 /* ─── POST /api/portfolio/publish ──────────────────────────── */
+// ✅ FIX: now accepts templateId + style in the request body so
+//    the template is ALWAYS saved atomically with the publish flag.
+//    This removes the race-condition between savePortfolioToBackend()
+//    and publish() being two separate calls.
 exports.publishPortfolio = async (req, res) => {
   try {
-    const portfolio = await Portfolio.findOne({ user: req.user.id });
+    const { templateId, style } = req.body;   // ✅ accept from frontend
 
+    const portfolio = await Portfolio.findOne({ user: req.user.id });
     if (!portfolio) {
       return res.status(404).json({ message: 'No portfolio found. Save your data first.' });
     }
@@ -81,17 +86,19 @@ exports.publishPortfolio = async (req, res) => {
 
     portfolio.isPublished = true;
     portfolio.slug        = slug;
+
+    // ✅ Atomically save templateId + style together with isPublished
+    if (templateId)                              portfolio.templateId = templateId;
+    if (style && Object.keys(style).length > 0) portfolio.style      = style;
+
+    console.log('🚀 publishPortfolio — saving templateId:', portfolio.templateId, '| slug:', slug);
+
     await portfolio.save();
 
-    // ✅ Return just the path — frontend uses window.location.origin to build full URL
-    // In dev:  http://localhost:3000/p/rohan-sharma
-    // In prod: https://skillfolio.app/p/rohan-sharma
-    const portfolioUrl = `/p/${slug}`;
-
     res.json({
-      message: 'Portfolio published!',
+      message:      'Portfolio published!',
       slug,
-      portfolioUrl,
+      portfolioUrl: `/p/${slug}`,
       portfolio,
     });
   } catch (err) {
@@ -109,6 +116,8 @@ exports.getPublicPortfolio = async (req, res) => {
     if (!portfolio) {
       return res.status(404).json({ message: 'Portfolio not found or not published' });
     }
+
+    console.log('📖 getPublicPortfolio — templateId from DB:', portfolio.templateId);
 
     res.json({ portfolio });
   } catch (err) {

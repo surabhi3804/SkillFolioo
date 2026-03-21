@@ -12,13 +12,17 @@
   align-items: center;
   justify-content: space-between;
   height: 64px;
+  padding: 0 24px;        /* ✅ consistent horizontal padding */
+  gap: 16px;
 }
 
+/* ── Brand — always far left ── */
 .navbar-brand {
   display: flex;
   align-items: center;
   gap: 10px;
   cursor: pointer;
+  flex-shrink: 0;          /* ✅ never squish the logo */
 }
 
 .brand-icon {
@@ -30,6 +34,7 @@
   align-items: center;
   justify-content: center;
   color: #fff;
+  flex-shrink: 0;
 }
 
 .brand-name {
@@ -38,37 +43,47 @@
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.3px;
+  white-space: nowrap;     /* ✅ brand name never wraps */
 }
 
+/* ── Nav links row ── */
 .navbar-links {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
+  flex: 1;                 /* ✅ takes remaining space after brand */
+  justify-content: flex-end; /* ✅ pushes links to the right */
+  flex-wrap: nowrap;       /* ✅ never wrap to second line */
 }
 
+/* ── Individual link ── */
 .nav-link {
   background: none;
   border: none;
-  padding: 8px 14px;
+  padding: 7px 10px;       /* ✅ tighter padding so all fit on one line */
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;         /* ✅ slightly smaller so nothing wraps */
   font-weight: 500;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s;
   font-family: 'Inter', sans-serif;
+  white-space: nowrap;     /* ✅ "ATS Score" stays on one line */
+  line-height: 1;
 }
-.nav-link:hover { color: var(--primary); background: rgba(124,58,237,0.06); }
+.nav-link:hover  { color: var(--primary); background: rgba(124,58,237,0.06); }
 .nav-link.active { color: var(--primary); background: rgba(124,58,237,0.08); font-weight: 600; }
 
-/* Portfolio dropdown */
+/* ── Dropdown wrapper ── */
 .nav-dropdown-wrap {
   position: relative;
+  flex-shrink: 0;
 }
 .nav-dropdown-trigger {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
+  white-space: nowrap;     /* ✅ "Resume Analyser" stays one line */
 }
 .nav-dropdown {
   position: absolute;
@@ -78,7 +93,7 @@
   border: 1px solid var(--border);
   border-radius: 10px;
   box-shadow: var(--shadow-lg);
-  min-width: 180px;
+  min-width: 190px;
   padding: 6px;
   z-index: 200;
   animation: fadeIn 0.15s ease;
@@ -91,25 +106,30 @@
   border-radius: 7px;
   background: none;
   border: none;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.15s;
   font-family: 'Inter', sans-serif;
+  white-space: nowrap;
 }
-.nav-dropdown-item:hover { color: var(--primary); background: rgba(124,58,237,0.06); }
+.nav-dropdown-item:hover  { color: var(--primary); background: rgba(124,58,237,0.06); }
 .nav-dropdown-item.active { color: var(--primary); background: rgba(124,58,237,0.08); font-weight: 600; }
 
+/* ── Sign out ── */
 .nav-logout {
-  margin-left: 8px;
-  font-size: 14px;
+  margin-left: 4px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 7px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
+/* ── Hamburger toggle ── */
 .menu-toggle {
   display: none;
   background: none;
@@ -117,28 +137,41 @@
   color: var(--text);
   cursor: pointer;
   padding: 4px;
+  flex-shrink: 0;
 }
 
+/* ── Mobile ── */
 @media (max-width: 900px) {
   .menu-toggle { display: block; }
+
   .navbar-links {
     display: none;
     position: absolute;
     top: 64px;
-    left: 0;
-    right: 0;
+    left: 0; right: 0;
     background: var(--bg-card);
     flex-direction: column;
     align-items: stretch;
+    justify-content: flex-start;
+    flex-wrap: wrap;
     padding: 12px 24px 20px;
     border-bottom: 1px solid var(--border);
     box-shadow: var(--shadow-md);
     gap: 4px;
   }
   .navbar-links.open { display: flex; }
-  .nav-link { width: 100%; text-align: left; }
-  .nav-logout { width: 100%; }
+
+  .nav-link       { width: 100%; text-align: left; font-size: 14px; padding: 10px 14px; }
+  .nav-logout     { width: 100%; }
   .nav-dropdown-wrap { width: 100%; }
-  .nav-dropdown { position: static; box-shadow: none; border: none; background: rgba(124,58,237,0.04); border-radius: 8px; margin-top: 4px; padding: 4px; }
   .nav-dropdown-trigger { width: 100%; }
+  .nav-dropdown {
+    position: static;
+    box-shadow: none;
+    border: none;
+    background: rgba(124,58,237,0.04);
+    border-radius: 8px;
+    margin-top: 4px;
+    padding: 4px;
+  }
 }

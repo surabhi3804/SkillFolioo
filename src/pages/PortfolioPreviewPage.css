@@ -129,3 +129,53 @@
   0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
   40% { opacity: 1; transform: scale(1); }
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   ADD THESE RULES TO THE BOTTOM OF PortfolioPreviewPage.css
+   ───────────────────────────────────────────────────────────────── */
+
+/* Inline spinner inside the Publish button */
+.pfprev-spinner {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: pfprev-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pfprev-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Publish button — loading state dims it slightly */
+.publish-btn.loading {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+/* Re-publish variant — slightly muted so it reads as "update" not "first publish" */
+.publish-btn svg {
+  flex-shrink: 0;
+}
+
+/* pfprev-actions gap — make sure buttons don't crowd */
+.pfprev-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Error bar below topbar */
+.publish-error {
+  margin: 0 0 12px;
+  padding: 10px 16px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #b91c1c;
+}

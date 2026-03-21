@@ -1,0 +1,546 @@
+/* ─────────────────────────────────────────────────────────────────
+   ResumeUploadPage.css  — matches SkillFolio light/purple theme
+   ───────────────────────────────────────────────────────────────── */
+
+/* ── Page ── */
+.rup-page {
+  min-height: 100vh;
+  background: #F1F0FF;
+  padding: 48px 0 80px;
+}
+
+.rup-container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Header ── */
+.rup-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.rup-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 16px;
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7C3AED;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.rup-title {
+  font-size: clamp(26px, 4vw, 42px);
+  font-weight: 800;
+  color: #1E293B;
+  margin: 0 0 14px;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+}
+.rup-title-accent { color: #7C3AED; }
+.rup-subtitle {
+  font-size: 15px;
+  color: #64748B;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* ── Card ── */
+.rup-card {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 2px 16px rgba(124, 58, 237, 0.06);
+  margin-bottom: 28px;
+}
+
+/* ── Drop zone ── */
+.rup-dropzone {
+  border: 2px dashed #C4B5FD;
+  border-radius: 12px;
+  background: #FAF5FF;
+  padding: 36px 24px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 130px;
+}
+.rup-dropzone:hover,
+.rup-dropzone.dragging {
+  border-color: #7C3AED;
+  background: #F3E8FF;
+}
+.rup-dropzone.has-file {
+  border-style: solid;
+  border-color: #7C3AED;
+  background: #FAF5FF;
+  padding: 18px 24px;
+}
+.rup-drop-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.rup-drop-icon {
+  width: 56px; height: 56px;
+  border-radius: 14px;
+  background: rgba(124,58,237,0.1);
+  border: 1px solid rgba(124,58,237,0.2);
+  display: flex; align-items: center; justify-content: center;
+  color: #7C3AED;
+}
+.rup-drop-title {
+  font-size: 16px; font-weight: 700; color: #1E293B; margin: 0;
+}
+.rup-drop-sub {
+  font-size: 13px; color: #94A3B8; margin: 0;
+}
+
+/* File preview */
+.rup-file-preview {
+  display: flex; align-items: center; gap: 14px; width: 100%;
+}
+.rup-file-icon {
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  background: rgba(124,58,237,0.1);
+  border: 1px solid rgba(124,58,237,0.2);
+  display: flex; align-items: center; justify-content: center;
+  color: #7C3AED; flex-shrink: 0;
+}
+.rup-file-info { flex: 1; min-width: 0; }
+.rup-file-name {
+  font-size: 14px; font-weight: 600; color: #1E293B;
+  margin: 0 0 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rup-file-size { font-size: 12px; color: #059669; margin: 0; }
+.rup-file-remove {
+  background: #FEF2F2; border: 1px solid #FCA5A5;
+  color: #DC2626; border-radius: 8px; padding: 6px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s; flex-shrink: 0;
+}
+.rup-file-remove:hover { background: #FEE2E2; }
+
+/* ── Target Role Selector ── */
+.rup-role-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rup-jd-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; color: #374151;
+}
+.rup-optional { font-weight: 400; color: #9CA3AF; }
+
+/* Chips grid */
+.rup-roles-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rup-role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 999px;
+  background: #fff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.rup-role-chip:hover {
+  border-color: #7C3AED;
+  color: #7C3AED;
+  background: #F5F3FF;
+}
+
+.rup-role-chip.selected {
+  border-color: #7C3AED;
+  background: #7C3AED;
+  color: #fff;
+  font-weight: 600;
+}
+
+.rup-role-chip.custom {
+  border-color: #C4B5FD;
+  background: #F5F3FF;
+  color: #6D28D9;
+}
+
+.rup-role-chip.custom.selected {
+  background: #7C3AED;
+  color: #fff;
+  border-color: #7C3AED;
+}
+
+.rup-role-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.12);
+  margin-left: 2px;
+  transition: background 0.15s;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.rup-role-chip.selected .rup-role-chip-remove {
+  background: rgba(255,255,255,0.25);
+}
+
+.rup-role-chip-remove:hover {
+  background: rgba(0,0,0,0.22);
+}
+
+/* Add custom role row */
+.rup-role-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.rup-role-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #F9FAFB;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 999px;
+  padding: 0 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.rup-role-input-wrap:focus-within {
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.08);
+  background: #fff;
+}
+
+.rup-role-input-wrap.has-error {
+  border-color: #FCA5A5;
+}
+
+.rup-role-input-icon {
+  color: #9CA3AF;
+  flex-shrink: 0;
+}
+
+.rup-role-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 9px 0;
+  font-size: 13px;
+  color: #1E293B;
+  font-family: inherit;
+  outline: none;
+  min-width: 0;
+}
+
+.rup-role-input::placeholder { color: #CBD5E1; }
+
+.rup-role-input-error {
+  font-size: 11px;
+  color: #DC2626;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.rup-role-add-btn {
+  padding: 9px 20px;
+  background: #7C3AED;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.rup-role-add-btn:hover:not(:disabled) { background: #6D28D9; }
+.rup-role-add-btn:disabled {
+  background: #C4B5FD;
+  cursor: not-allowed;
+}
+
+/* Selection summary pill */
+.rup-role-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 10px 14px;
+  background: #F5F3FF;
+  border: 1px solid #E9D5FF;
+  border-radius: 10px;
+  font-size: 12px;
+  color: #6D28D9;
+  line-height: 1.5;
+  animation: rup-fadeIn 0.2s ease;
+}
+
+.rup-role-summary-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px; height: 20px;
+  border-radius: 999px;
+  background: #7C3AED;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 5px;
+}
+
+.rup-role-summary-names {
+  color: #4C1D95;
+  font-weight: 500;
+}
+
+@keyframes rup-fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Error */
+.rup-error {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  border-radius: 8px;
+  font-size: 13px; color: #DC2626;
+}
+
+/* Analyse button */
+.rup-analyse-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 28px;
+  background: #7C3AED;
+  color: #fff;
+  border: none; border-radius: 10px;
+  font-size: 15px; font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(124,58,237,0.3);
+}
+.rup-analyse-btn:hover:not(:disabled) {
+  background: #6D28D9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(124,58,237,0.38);
+}
+.rup-analyse-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.rup-btn-spinner {
+  display: inline-block; width: 15px; height: 15px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: rup-spin 0.7s linear infinite;
+}
+@keyframes rup-spin { to { transform: rotate(360deg); } }
+
+/* ── Steps (empty state) ── */
+.rup-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 4px;
+}
+.rup-step {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 22px 18px;
+  display: flex; flex-direction: column; gap: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.rup-step:hover {
+  border-color: #C4B5FD;
+  box-shadow: 0 4px 16px rgba(124,58,237,0.08);
+}
+.rup-step-num {
+  font-size: 10px; font-weight: 800;
+  color: rgba(124,58,237,0.4);
+  letter-spacing: 2px;
+}
+.rup-step-icon {
+  color: #7C3AED;
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: rgba(124,58,237,0.08);
+  display: flex; align-items: center; justify-content: center;
+}
+.rup-step-title {
+  font-size: 14px; font-weight: 700; color: #1E293B; margin: 0;
+}
+.rup-step-desc {
+  font-size: 13px; color: #64748B; margin: 0; line-height: 1.6;
+}
+
+/* ── Results panel ── */
+.rup-results {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(124,58,237,0.06);
+  animation: rup-slideup 0.4s ease forwards;
+}
+@keyframes rup-slideup {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Tabs */
+.rup-tabs {
+  display: flex;
+  border-bottom: 1px solid #E2E8F0;
+  background: #F9FAFB;
+}
+.rup-tab {
+  display: flex; align-items: center; gap: 7px;
+  padding: 14px 22px;
+  font-size: 14px; font-weight: 500;
+  color: #64748B;
+  background: transparent; border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+.rup-tab:hover { color: #7C3AED; }
+.rup-tab.active { color: #7C3AED; border-bottom-color: #7C3AED; font-weight: 600; }
+
+/* Tab content */
+.rup-tab-content {
+  padding: 28px;
+  display: flex; flex-direction: column; gap: 28px;
+}
+
+/* ATS hero */
+.rup-ats-hero {
+  display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap;
+}
+.rup-ats-summary { flex: 1; min-width: 240px; }
+.rup-section-heading {
+  font-size: 20px; font-weight: 800; color: #1E293B; margin: 0 0 8px;
+}
+
+/* Score ring */
+.score-ring-wrap { position: relative; flex-shrink: 0; }
+.score-ring-inner {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.score-number { font-size: 36px; font-weight: 800; line-height: 1; }
+.score-slash  { font-size: 11px; color: #9CA3AF; font-weight: 500; }
+.score-label  { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+/* Score bars */
+.rup-score-bars { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.score-bar-row  { display: flex; flex-direction: column; gap: 5px; }
+.score-bar-label {
+  display: flex; justify-content: space-between;
+  font-size: 12px; color: #64748B; font-weight: 500;
+}
+.score-bar-track {
+  height: 6px; background: #F1F5F9; border-radius: 4px; overflow: hidden;
+}
+.score-bar-fill {
+  height: 100%; border-radius: 4px;
+  transition: width 1s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* Sections */
+.rup-section { display: flex; flex-direction: column; gap: 10px; }
+.rup-section-title {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 14px; font-weight: 700; color: #1E293B; margin: 0;
+}
+.rup-muted { font-size: 13px; color: #64748B; margin: 0; line-height: 1.6; }
+
+/* Tags */
+.rup-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.skill-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 6px;
+  font-size: 12px; font-weight: 600;
+}
+
+/* Suggestions */
+.rup-suggestions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.rup-suggestion-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 11px 14px;
+  background: #F9FAFB;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: 13px; color: #374151; line-height: 1.6;
+}
+
+/* Skill stats */
+.rup-skill-stats {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px;
+}
+.rup-stat-card {
+  background: #F9FAFB; border: 1px solid #E2E8F0;
+  border-radius: 14px; padding: 18px 14px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  text-align: center;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.rup-stat-card:hover { border-color: #C4B5FD; box-shadow: 0 2px 10px rgba(124,58,237,0.08); }
+.rup-stat-value { font-size: 26px; font-weight: 800; line-height: 1; }
+.rup-stat-label { font-size: 11px; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+
+/* Empty */
+.rup-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; padding: 48px 24px; color: #94A3B8; font-size: 14px; text-align: center;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .rup-ats-hero { flex-direction: column; align-items: center; }
+  .rup-tab-content { padding: 20px 16px; }
+  .rup-card { padding: 20px 16px; }
+  .rup-role-add-row { flex-direction: column; align-items: stretch; }
+  .rup-role-add-btn { border-radius: 10px; text-align: center; }
+}

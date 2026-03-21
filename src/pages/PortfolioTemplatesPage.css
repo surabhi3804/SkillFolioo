@@ -150,3 +150,94 @@
   .ptpl-title { font-size: 26px; }
   .ptpl-preview { height: 180px; }
 }
+
+
+/* ─────────────────────────────────────────────────────────────────
+   ADD THESE RULES TO THE BOTTOM OF PortfolioTemplatesPage.css
+   ───────────────────────────────────────────────────────────────── */
+
+/* Action button row */
+.ptpl-action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 4px;
+}
+
+/* Publish button */
+.ptpl-publish-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 26px;
+  font-weight: 600;
+  font-size: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 2px solid var(--border, #E2E8F0);
+  background: transparent;
+  color: var(--text, #1E293B);
+  transition: background 0.18s, border-color 0.18s, opacity 0.18s;
+}
+
+.ptpl-publish-btn:hover:not(:disabled) {
+  background: var(--surface-hover, #F1F5F9);
+  border-color: #94A3B8;
+}
+
+.ptpl-publish-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Live URL success banner */
+.ptpl-published-banner {
+  width: 100%;
+  padding: 12px 18px;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #166534;
+  font-weight: 500;
+}
+
+.ptpl-published-banner a {
+  color: #16a34a;
+  font-weight: 700;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.ptpl-published-banner a:hover {
+  color: #15803d;
+}
+
+/* Error message */
+.ptpl-publish-error {
+  width: 100%;
+  padding: 10px 16px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #b91c1c;
+  margin: 0;
+}
+
+/* Inline spinner for "Publishing…" state */
+.ptpl-spinner {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: ptpl-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes ptpl-spin {
+  to { transform: rotate(360deg); }
+}

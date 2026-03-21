@@ -9,7 +9,58 @@ import {
 import './ResumePreviewPage.css';
 
 /* ─────────────────────────────────────────────────────────────
-   TEMPLATE: CLASSIC
+   SMALL HELPER COMPONENTS
+───────────────────────────────────────────────────────────── */
+const Section = ({ title, children }) => (
+  <div style={{ marginBottom: 18 }}>
+    <h2 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, borderBottom: '1px solid #999', paddingBottom: 3, marginBottom: 10, color: '#111' }}>{title}</h2>
+    {children}
+  </div>
+);
+
+const ModernSection = ({ title, accent, children }) => (
+  <div style={{ marginBottom: 18 }}>
+    <h2 style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, color: accent, margin: '0 0 10px', borderBottom: `2px solid ${accent}20`, paddingBottom: 5 }}>{title}</h2>
+    {children}
+  </div>
+);
+
+const SidebarSection = ({ title, children }) => (
+  <div>
+    <h3 style={{ fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, opacity: 0.45, margin: '0 0 8px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 5 }}>{title}</h3>
+    {children}
+  </div>
+);
+
+const SidebarItem = ({ label, value }) => (
+  <div style={{ marginBottom: 7 }}>
+    <div style={{ fontSize: 9.5, opacity: 0.45, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 1 }}>{label}</div>
+    <div style={{ fontSize: 11.5, opacity: 0.85, wordBreak: 'break-all' }}>{value}</div>
+  </div>
+);
+
+/* Red Accent section divider helper */
+const RedSection = ({ title, accent, children }) => (
+  <div style={{ marginBottom: 18 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+      <div style={{ flex: 1, height: 1, background: accent }} />
+      <h2 style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, color: '#111', margin: 0, whiteSpace: 'nowrap' }}>{title}</h2>
+      <div style={{ flex: 1, height: 1, background: accent }} />
+    </div>
+    {children}
+  </div>
+);
+
+/* AutoCV italic section helper */
+const AutoSection = ({ title, children }) => (
+  <div style={{ marginBottom: 16 }}>
+    <h2 style={{ fontSize: 12, fontStyle: 'italic', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: '#333', margin: '0 0 8px', borderBottom: '1px solid #ccc', paddingBottom: 4 }}>{title}</h2>
+    {children}
+  </div>
+);
+
+/* ─────────────────────────────────────────────────────────────
+   TEMPLATE: CLASSIC CLEAN  (id: 'classic-clean')
 ───────────────────────────────────────────────────────────── */
 const ClassicTemplate = ({ data }) => (
   <div style={{ fontFamily: 'Georgia, serif', color: '#111', lineHeight: 1.55 }}>
@@ -26,10 +77,8 @@ const ClassicTemplate = ({ data }) => (
       </div>
     </div>
 
-    {/* Summary */}
     {data.summary && <Section title="Summary"><p style={{ fontSize: 13, color: '#333', margin: 0 }}>{data.summary}</p></Section>}
 
-    {/* Experience */}
     {(data.workExperience || []).length > 0 && (
       <Section title="Work Experience">
         {data.workExperience.map((exp, i) => (
@@ -45,7 +94,6 @@ const ClassicTemplate = ({ data }) => (
       </Section>
     )}
 
-    {/* Education */}
     {(data.education || []).length > 0 && (
       <Section title="Education">
         {data.education.map((edu, i) => (
@@ -60,14 +108,12 @@ const ClassicTemplate = ({ data }) => (
       </Section>
     )}
 
-    {/* Skills */}
     {(data.skills || []).length > 0 && (
       <Section title="Skills">
         <p style={{ fontSize: 13, margin: 0 }}>{data.skills.join(' · ')}</p>
       </Section>
     )}
 
-    {/* Projects */}
     {(data.projects || []).length > 0 && (
       <Section title="Projects">
         {data.projects.map((proj, i) => (
@@ -86,11 +132,10 @@ const ClassicTemplate = ({ data }) => (
 );
 
 /* ─────────────────────────────────────────────────────────────
-   TEMPLATE: MODERN HEADER
+   TEMPLATE: MODERN HEADER  (id: 'modern-header')
 ───────────────────────────────────────────────────────────── */
-const ModernHeaderTemplate = ({ data, accentColor = '#7C3AED' }) => (
+const ModernHeaderTemplate = ({ data, accentColor = '#4A5568' }) => (
   <div style={{ fontFamily: 'Inter, sans-serif', color: '#1E293B' }}>
-    {/* Coloured Header Block */}
     <div style={{ background: accentColor, color: '#fff', padding: '28px 36px 22px', marginBottom: 0 }}>
       <h1 style={{ fontSize: 30, fontWeight: 800, margin: '0 0 4px', letterSpacing: -0.5 }}>{data.name || 'Your Name'}</h1>
       {data.professionalTitle && <p style={{ fontSize: 15, opacity: 0.88, margin: '0 0 14px', fontWeight: 500 }}>{data.professionalTitle}</p>}
@@ -110,9 +155,7 @@ const ModernHeaderTemplate = ({ data, accentColor = '#7C3AED' }) => (
         </div>
       )}
 
-      {/* Two-column grid for skills + rest */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 24 }}>
-        {/* Left col */}
         <div>
           {(data.skills || []).length > 0 && (
             <ModernSection title="Skills" accent={accentColor}>
@@ -139,7 +182,6 @@ const ModernHeaderTemplate = ({ data, accentColor = '#7C3AED' }) => (
           )}
         </div>
 
-        {/* Right col */}
         <div>
           {(data.workExperience || []).length > 0 && (
             <ModernSection title="Experience" accent={accentColor}>
@@ -173,11 +215,10 @@ const ModernHeaderTemplate = ({ data, accentColor = '#7C3AED' }) => (
 );
 
 /* ─────────────────────────────────────────────────────────────
-   TEMPLATE: SIDEBAR PRO
+   TEMPLATE: SIDEBAR PRO  (id: 'sidebar-pro')
 ───────────────────────────────────────────────────────────── */
-const SidebarProTemplate = ({ data, accentColor = '#0F172A' }) => (
+const SidebarProTemplate = ({ data, accentColor = '#2C3E6B' }) => (
   <div style={{ fontFamily: 'Inter, sans-serif', display: 'grid', gridTemplateColumns: '220px 1fr', minHeight: '100%' }}>
-    {/* Dark sidebar */}
     <div style={{ background: accentColor, color: '#F8FAFC', padding: '32px 20px', display: 'flex', flexDirection: 'column', gap: 22 }}>
       <div>
         <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 800, color: '#fff', marginBottom: 12 }}>
@@ -219,7 +260,6 @@ const SidebarProTemplate = ({ data, accentColor = '#0F172A' }) => (
       )}
     </div>
 
-    {/* Main content */}
     <div style={{ padding: '32px 28px', background: '#fff', color: '#1E293B' }}>
       {data.summary && (
         <div style={{ marginBottom: 22 }}>
@@ -264,9 +304,9 @@ const SidebarProTemplate = ({ data, accentColor = '#0F172A' }) => (
 );
 
 /* ─────────────────────────────────────────────────────────────
-   TEMPLATE: MINIMAL
+   TEMPLATE: MINIMAL BLUE  (id: 'minimal-blue')
 ───────────────────────────────────────────────────────────── */
-const MinimalTemplate = ({ data, accentColor = '#2563EB' }) => (
+const MinimalTemplate = ({ data, accentColor = '#1E40AF' }) => (
   <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", color: '#1E293B', padding: '0 4px' }}>
     <div style={{ marginBottom: 24 }}>
       <h1 style={{ fontSize: 32, fontWeight: 300, margin: '0 0 4px', letterSpacing: -1 }}>{data.name || 'Your Name'}</h1>
@@ -275,6 +315,8 @@ const MinimalTemplate = ({ data, accentColor = '#2563EB' }) => (
         {data.email    && <span>{data.email}</span>}
         {data.phone    && <span>{data.phone}</span>}
         {data.location && <span>{data.location}</span>}
+        {data.linkedin && <span>linkedin.com/in/{data.linkedin}</span>}
+        {data.github   && <span>github.com/{data.github}</span>}
       </div>
       <div style={{ height: 1, background: '#E2E8F0', marginTop: 16 }}/>
     </div>
@@ -283,7 +325,7 @@ const MinimalTemplate = ({ data, accentColor = '#2563EB' }) => (
 
     {(data.workExperience || []).length > 0 && (
       <div style={{ marginBottom: 22 }}>
-        <h2 style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2.5, color: accentColor, margin: '0 0 12px' }}>Experience</h2>
+        <h2 style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2.5, color: accentColor, margin: '0 0 8px', borderBottom: `1px solid ${accentColor}`, paddingBottom: 4 }}>Work Experience</h2>
         {data.workExperience.map((exp, i) => (
           <div key={i} style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: 12, marginBottom: 14 }}>
             <div style={{ fontSize: 11.5, color: '#94A3B8', paddingTop: 2 }}>{exp.duration}</div>
@@ -299,7 +341,7 @@ const MinimalTemplate = ({ data, accentColor = '#2563EB' }) => (
 
     {(data.education || []).length > 0 && (
       <div style={{ marginBottom: 22 }}>
-        <h2 style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2.5, color: accentColor, margin: '0 0 12px' }}>Education</h2>
+        <h2 style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2.5, color: accentColor, margin: '0 0 8px', borderBottom: `1px solid ${accentColor}`, paddingBottom: 4 }}>Education</h2>
         {data.education.map((edu, i) => (
           <div key={i} style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: 12, marginBottom: 10 }}>
             <div style={{ fontSize: 11.5, color: '#94A3B8', paddingTop: 2 }}>{edu.duration}</div>
@@ -314,7 +356,7 @@ const MinimalTemplate = ({ data, accentColor = '#2563EB' }) => (
 
     {(data.skills || []).length > 0 && (
       <div style={{ marginBottom: 22 }}>
-        <h2 style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2.5, color: accentColor, margin: '0 0 12px' }}>Skills</h2>
+        <h2 style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2.5, color: accentColor, margin: '0 0 8px', borderBottom: `1px solid ${accentColor}`, paddingBottom: 4 }}>Skills</h2>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 20px', fontSize: 13 }}>
           {data.skills.map(s => <span key={s} style={{ color: '#334155' }}>{s}</span>)}
         </div>
@@ -323,7 +365,7 @@ const MinimalTemplate = ({ data, accentColor = '#2563EB' }) => (
 
     {(data.projects || []).length > 0 && (
       <div>
-        <h2 style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2.5, color: accentColor, margin: '0 0 12px' }}>Projects</h2>
+        <h2 style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2.5, color: accentColor, margin: '0 0 8px', borderBottom: `1px solid ${accentColor}`, paddingBottom: 4 }}>Projects</h2>
         {data.projects.map((proj, i) => (
           <div key={i} style={{ marginBottom: 12 }}>
             <strong style={{ fontSize: 13.5 }}>{proj.name}</strong>
@@ -337,47 +379,177 @@ const MinimalTemplate = ({ data, accentColor = '#2563EB' }) => (
 );
 
 /* ─────────────────────────────────────────────────────────────
-   SMALL HELPER COMPONENTS
+   TEMPLATE: RED ACCENT  (id: 'red-accent')
 ───────────────────────────────────────────────────────────── */
-const Section = ({ title, children }) => (
-  <div style={{ marginBottom: 18 }}>
-    <h2 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, borderBottom: '1px solid #999', paddingBottom: 3, marginBottom: 10, color: '#111' }}>{title}</h2>
-    {children}
-  </div>
-);
+const RedAccentTemplate = ({ data, accentColor = '#DC2626' }) => (
+  <div style={{ fontFamily: 'Georgia, serif', color: '#111', lineHeight: 1.55 }}>
+    {/* Header */}
+    <div style={{ textAlign: 'center', marginBottom: 18 }}>
+      <h1 style={{ fontSize: 26, fontWeight: 700, margin: '0 0 4px', letterSpacing: 0.3 }}>{data.name || 'Your Name'}</h1>
+      {data.professionalTitle && <p style={{ fontSize: 13, color: '#555', margin: '0 0 10px' }}>{data.professionalTitle}</p>}
+      {/* 3-column info row */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 24, flexWrap: 'wrap', fontSize: 12, color: '#444', borderTop: '1px solid #eee', borderBottom: '1px solid #eee', padding: '8px 0' }}>
+        {data.email    && <span>{data.email}</span>}
+        {data.phone    && <span>{data.phone}</span>}
+        {data.location && <span>{data.location}</span>}
+        {data.linkedin && <span>linkedin.com/in/{data.linkedin}</span>}
+        {data.github   && <span>github.com/{data.github}</span>}
+      </div>
+    </div>
 
-const ModernSection = ({ title, accent, children }) => (
-  <div style={{ marginBottom: 18 }}>
-    <h2 style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, color: accent, margin: '0 0 10px', borderBottom: `2px solid ${accent}20`, paddingBottom: 5 }}>{title}</h2>
-    {children}
-  </div>
-);
+    {data.summary && (
+      <RedSection title="Summary" accent={accentColor}>
+        <p style={{ fontSize: 13, color: '#333', margin: 0 }}>{data.summary}</p>
+      </RedSection>
+    )}
 
-const SidebarSection = ({ title, children }) => (
-  <div>
-    <h3 style={{ fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, opacity: 0.45, margin: '0 0 8px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 5 }}>{title}</h3>
-    {children}
-  </div>
-);
+    {(data.workExperience || []).length > 0 && (
+      <RedSection title="Work Experience" accent={accentColor}>
+        {data.workExperience.map((exp, i) => (
+          <div key={i} style={{ marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <strong style={{ fontSize: 13.5 }}>{exp.title}</strong>
+              <span style={{ fontSize: 12, color: '#666' }}>{exp.duration}</span>
+            </div>
+            <div style={{ fontSize: 13, color: accentColor, marginBottom: 4 }}>{exp.company}{exp.location ? `, ${exp.location}` : ''}</div>
+            {exp.description && <p style={{ fontSize: 12.5, color: '#555', margin: 0, whiteSpace: 'pre-line' }}>{exp.description}</p>}
+          </div>
+        ))}
+      </RedSection>
+    )}
 
-const SidebarItem = ({ label, value }) => (
-  <div style={{ marginBottom: 7 }}>
-    <div style={{ fontSize: 9.5, opacity: 0.45, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 1 }}>{label}</div>
-    <div style={{ fontSize: 11.5, opacity: 0.85, wordBreak: 'break-all' }}>{value}</div>
+    {(data.education || []).length > 0 && (
+      <RedSection title="Education" accent={accentColor}>
+        {data.education.map((edu, i) => (
+          <div key={i} style={{ marginBottom: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <strong style={{ fontSize: 13.5 }}>{edu.degree}</strong>
+              <span style={{ fontSize: 12, color: '#666' }}>{edu.duration}</span>
+            </div>
+            <div style={{ fontSize: 13, color: '#444' }}>{edu.institution}{edu.gpa ? ` — GPA: ${edu.gpa}` : ''}</div>
+          </div>
+        ))}
+      </RedSection>
+    )}
+
+    {(data.skills || []).length > 0 && (
+      <RedSection title="Skills" accent={accentColor}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px', fontSize: 13, color: '#333' }}>
+          {data.skills.map(s => <span key={s}>{s}</span>)}
+        </div>
+      </RedSection>
+    )}
+
+    {(data.projects || []).length > 0 && (
+      <RedSection title="Projects" accent={accentColor}>
+        {data.projects.map((proj, i) => (
+          <div key={i} style={{ marginBottom: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <strong style={{ fontSize: 13.5 }}>{proj.name}</strong>
+              {proj.link && <a href={proj.link} style={{ fontSize: 11, color: '#555' }}>{proj.link}</a>}
+            </div>
+            {proj.tech && <div style={{ fontSize: 12, color: '#666', marginBottom: 3 }}>{proj.tech}</div>}
+            {proj.description && <p style={{ fontSize: 12.5, color: '#555', margin: 0, lineHeight: 1.6 }}>{proj.description}</p>}
+          </div>
+        ))}
+      </RedSection>
+    )}
   </div>
 );
 
 /* ─────────────────────────────────────────────────────────────
-   TEMPLATE ROUTER
+   TEMPLATE: AUTO CV  (id: 'auto-cv')
+───────────────────────────────────────────────────────────── */
+const AutoCVTemplate = ({ data, accentColor = '#1a56db' }) => (
+  <div style={{ fontFamily: 'Georgia, serif', color: '#222', lineHeight: 1.6 }}>
+    {/* Centered header */}
+    <div style={{ textAlign: 'center', marginBottom: 14 }}>
+      <h1 style={{ fontSize: 26, fontWeight: 700, margin: '0 0 6px', letterSpacing: 0.3 }}>{data.name || 'Your Name'}</h1>
+      {data.professionalTitle && <p style={{ fontSize: 13, color: '#555', margin: '0 0 10px' }}>{data.professionalTitle}</p>}
+      {/* Icon-style contact links row */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 18, flexWrap: 'wrap', fontSize: 12, color: accentColor }}>
+        {data.email    && <span>✉ {data.email}</span>}
+        {data.phone    && <span>☎ {data.phone}</span>}
+        {data.linkedin && <span>in/{data.linkedin}</span>}
+        {data.github   && <span>⌥ {data.github}</span>}
+      </div>
+    </div>
+    <div style={{ height: 1, background: '#ccc', marginBottom: 14 }} />
+
+    {data.summary && (
+      <AutoSection title="Summary">
+        <p style={{ fontSize: 13, color: '#333', margin: 0 }}>{data.summary}</p>
+      </AutoSection>
+    )}
+
+    {(data.workExperience || []).length > 0 && (
+      <AutoSection title="Work Experience">
+        {data.workExperience.map((exp, i) => (
+          <div key={i} style={{ marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <strong style={{ fontSize: 13.5 }}>{exp.title}</strong>
+              <span style={{ fontSize: 12, color: '#888' }}>{exp.duration}</span>
+            </div>
+            <div style={{ fontSize: 13, color: accentColor, marginBottom: 4 }}>{exp.company}{exp.location ? `, ${exp.location}` : ''}</div>
+            {exp.description && <p style={{ fontSize: 12.5, color: '#555', margin: 0, whiteSpace: 'pre-line' }}>{exp.description}</p>}
+          </div>
+        ))}
+      </AutoSection>
+    )}
+
+    {(data.education || []).length > 0 && (
+      <AutoSection title="Education">
+        {data.education.map((edu, i) => (
+          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+            <div>
+              <strong style={{ fontSize: 13.5 }}>{edu.degree}</strong>
+              <div style={{ fontSize: 13, color: '#555' }}>{edu.institution}</div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 12, color: '#888' }}>{edu.duration}</div>
+              {edu.gpa && <div style={{ fontSize: 12, color: accentColor }}>GPA: {edu.gpa}</div>}
+            </div>
+          </div>
+        ))}
+      </AutoSection>
+    )}
+
+    {(data.skills || []).length > 0 && (
+      <AutoSection title="Skills">
+        <p style={{ fontSize: 13, margin: 0, color: '#333' }}>{data.skills.join(' · ')}</p>
+      </AutoSection>
+    )}
+
+    {(data.projects || []).length > 0 && (
+      <AutoSection title="Projects">
+        {data.projects.map((proj, i) => (
+          <div key={i} style={{ marginBottom: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <strong style={{ fontSize: 13.5 }}>{proj.name}</strong>
+              {proj.link && <a href={proj.link} style={{ fontSize: 11, color: accentColor }}>{proj.link}</a>}
+            </div>
+            {proj.tech && <div style={{ fontSize: 12, color: '#888', marginBottom: 3 }}>{proj.tech}</div>}
+            {proj.description && <p style={{ fontSize: 12.5, color: '#555', margin: 0, lineHeight: 1.6 }}>{proj.description}</p>}
+          </div>
+        ))}
+      </AutoSection>
+    )}
+  </div>
+);
+
+/* ─────────────────────────────────────────────────────────────
+   TEMPLATE ROUTER  — IDs match exactly what TemplatesPage uses
 ───────────────────────────────────────────────────────────── */
 const ResumeRenderer = ({ templateId, data, accentColor }) => {
   const props = { data, accentColor };
   switch (templateId) {
-    case 'classic':        return <ClassicTemplate      {...props} />;
-    case 'modern-header':  return <ModernHeaderTemplate {...props} />;
-    case 'sidebar-pro':    return <SidebarProTemplate   {...props} />;
-    case 'minimal':        return <MinimalTemplate      {...props} />;
-    default:               return <ClassicTemplate      {...props} />;
+    case 'classic-clean':  return <ClassicTemplate       {...props} />;
+    case 'modern-header':  return <ModernHeaderTemplate  {...props} />;
+    case 'sidebar-pro':    return <SidebarProTemplate    {...props} />;
+    case 'minimal-blue':   return <MinimalTemplate       {...props} />;
+    case 'red-accent':     return <RedAccentTemplate     {...props} />;
+    case 'auto-cv':        return <AutoCVTemplate        {...props} />;
+    default:               return <ClassicTemplate       {...props} />;
   }
 };
 
@@ -396,7 +568,6 @@ const ResumePreviewPage = () => {
   const handlePrint = () => window.print();
 
   const handleDownload = () => {
-    // Basic print-to-PDF
     const style = document.createElement('style');
     style.textContent = `@media print { body > *:not(#resume-print-target) { display: none !important; } #resume-print-target { display: block !important; } }`;
     document.head.appendChild(style);
@@ -444,7 +615,7 @@ const ResumePreviewPage = () => {
               <ResumeRenderer
                 templateId={selectedTemplate}
                 data={resumeData}
-                accentColor={templateAccentColor || '#7C3AED'}
+                accentColor={templateAccentColor || tpl?.accent || '#DC2626'}
               />
             </div>
           ) : (

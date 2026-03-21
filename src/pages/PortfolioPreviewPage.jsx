@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import { PORTFOLIO_TEMPLATES } from '../data/staticData';
 import {
   Globe, ArrowLeft, ExternalLink, Edit3, Check,
-  Github, Linkedin, Mail, MapPin, Phone, Monitor, Copy
+  Github, Linkedin, Mail, MapPin, Phone, Monitor, Copy, RefreshCw
 } from 'lucide-react';
 import { portfolioAPI } from '../services/api';
 import './PortfolioPreviewPage.css';
@@ -163,21 +163,18 @@ const CleanLight = ({ data, style, pages }) => {
         <section style={{ padding: '70px 40px', maxWidth: 820, margin: '0 auto' }}>
           <h2 style={{ textAlign: 'center', fontSize: 30, fontWeight: 800, color: '#0F172A', marginBottom: 8 }}>Work Experience</h2>
           <div style={{ width: 40, height: 3, background: primaryColor, borderRadius: 2, margin: '0 auto 40px' }} />
-          <div style={{ position: 'relative' }}>
-            <div style={{ position: 'absolute', left: 24, top: 0, bottom: 0, width: 2, background: `${primaryColor}20` }} />
-            {data.workExperience.map((exp, i) => (
-              <div key={i} style={{ display: 'flex', gap: 24, marginBottom: 24, alignItems: 'flex-start' }}>
-                <div style={{ width: 50, height: 50, borderRadius: 14, background: `${primaryColor}15`, border: `2px solid ${primaryColor}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, zIndex: 1, fontSize: 20 }}>💼</div>
-                <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 16, padding: '20px 24px', flex: 1, boxShadow: '0 3px 14px rgba(0,0,0,0.06)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
-                    <div><h3 style={{ color: '#0F172A', fontWeight: 700, fontSize: 17, margin: 0 }}>{exp.title}</h3><p style={{ color: primaryColor, fontSize: 14, margin: '3px 0 0', fontWeight: 500 }}>{exp.company}{exp.location ? ` · ${exp.location}` : ''}</p></div>
-                    {exp.duration && <span style={{ padding: '4px 12px', background: `${primaryColor}10`, border: `1px solid ${primaryColor}25`, borderRadius: 20, color: primaryColor, fontSize: 12, fontWeight: 500 }}>{exp.duration}</span>}
-                  </div>
-                  {exp.description && <p style={{ color: '#64748B', fontSize: 14, lineHeight: 1.7, margin: 0, whiteSpace: 'pre-line' }}>{exp.description}</p>}
+          {data.workExperience.map((exp, i) => (
+            <div key={i} style={{ display: 'flex', gap: 24, marginBottom: 24, alignItems: 'flex-start' }}>
+              <div style={{ width: 50, height: 50, borderRadius: 14, background: `${primaryColor}15`, border: `2px solid ${primaryColor}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 20 }}>💼</div>
+              <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 16, padding: '20px 24px', flex: 1, boxShadow: '0 3px 14px rgba(0,0,0,0.06)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+                  <div><h3 style={{ color: '#0F172A', fontWeight: 700, fontSize: 17, margin: 0 }}>{exp.title}</h3><p style={{ color: primaryColor, fontSize: 14, margin: '3px 0 0', fontWeight: 500 }}>{exp.company}{exp.location ? ` · ${exp.location}` : ''}</p></div>
+                  {exp.duration && <span style={{ padding: '4px 12px', background: `${primaryColor}10`, border: `1px solid ${primaryColor}25`, borderRadius: 20, color: primaryColor, fontSize: 12, fontWeight: 500 }}>{exp.duration}</span>}
                 </div>
+                {exp.description && <p style={{ color: '#64748B', fontSize: 14, lineHeight: 1.7, margin: 0, whiteSpace: 'pre-line' }}>{exp.description}</p>}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </section>
       )}
       {(data.projects||[]).length > 0 && (
@@ -237,40 +234,6 @@ const CreativeGradient = ({ data, style, pages }) => {
           </div>
         </section>
       )}
-      {(data.workExperience||[]).length > 0 && (
-        <section style={{ padding: '70px 40px', maxWidth: 820, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 36, fontWeight: 900, marginBottom: 40 }}>Experience<span style={{ color: primaryColor }}>.</span></h2>
-          {data.workExperience.map((exp, i) => (
-            <div key={i} style={{ display: 'flex', gap: 24, marginBottom: 28, paddingBottom: 28, borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-              <div style={{ fontSize: 42, fontWeight: 900, color: `${primaryColor}30`, lineHeight: 1, flexShrink: 0, width: 48 }}>0{i+1}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
-                  <div><h3 style={{ fontSize: 19, fontWeight: 700, color: '#F8FAFC', margin: 0 }}>{exp.title}</h3><p style={{ color: primaryColor, fontSize: 14, margin: '4px 0 0' }}>{exp.company}{exp.location ? ` · ${exp.location}` : ''}</p></div>
-                  {exp.duration && <span style={{ color: 'rgba(248,250,252,0.4)', fontSize: 13 }}>{exp.duration}</span>}
-                </div>
-                {exp.description && <p style={{ color: 'rgba(248,250,252,0.5)', fontSize: 14, lineHeight: 1.7, margin: 0, whiteSpace: 'pre-line' }}>{exp.description}</p>}
-              </div>
-            </div>
-          ))}
-        </section>
-      )}
-      {(data.projects||[]).length > 0 && (
-        <section style={{ padding: '70px 40px', maxWidth: 860, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 36, fontWeight: 900, marginBottom: 40 }}>Projects<span style={{ color: accentColor }}>.</span></h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 20 }}>
-            {data.projects.map((proj, i) => (
-              <div key={i} style={{ background: `linear-gradient(135deg,${primaryColor}10,${accentColor}08)`, border: `1px solid ${i%2===0?primaryColor:accentColor}30`, borderRadius: 18, padding: '24px', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}><h3 style={{ color: '#F8FAFC', fontWeight: 700, fontSize: 17, margin: 0 }}>{proj.name}</h3>{proj.link && <a href={proj.link} target="_blank" rel="noreferrer" style={{ color: accentColor }}><ExternalLink size={16}/></a>}</div>
-                {proj.tech && <p style={{ color: i%2===0?primaryColor:accentColor, fontSize: 13, margin: '0 0 10px' }}>🛠 {proj.tech}</p>}
-                {proj.description && <p style={{ color: 'rgba(248,250,252,0.5)', fontSize: 13, lineHeight: 1.6, margin: 0 }}>{proj.description}</p>}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-      <section style={{ padding: '80px 40px', textAlign: 'center', background: `linear-gradient(135deg,${primaryColor}15,${accentColor}10)` }}>
-        {data.email && <a href={`mailto:${data.email}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '15px 32px', background: `linear-gradient(90deg,${primaryColor},${accentColor})`, color: '#fff', borderRadius: 30, textDecoration: 'none', fontWeight: 700, fontSize: 16 }}><Mail size={18}/> {data.email}</a>}
-      </section>
       <footer style={{ textAlign: 'center', padding: '20px', color: 'rgba(248,250,252,0.2)', fontSize: 13 }}>Built with SkillFolio · {data.name || 'Your Name'} · {new Date().getFullYear()}</footer>
     </div>
   );
@@ -379,36 +342,51 @@ const PortfolioRenderer = ({ templateId, data, style, pages }) => {
 const PortfolioPreviewPage = () => {
   const navigate = useNavigate();
   const {
-    resumeData, portfolioStyle, selectedPortfolioTemplate,
-    portfolioPublished, setPortfolioPublished,
-    portfolioSlug, setPortfolioSlug,
-    savePortfolioToBackend
+    resumeData,
+    portfolioStyle,
+    selectedPortfolioTemplate,
+    portfolioPublished,  setPortfolioPublished,
+    portfolioSlug,       setPortfolioSlug,
+    savePortfolioToBackend,
   } = useApp();
 
-  const [copied, setCopied]       = useState(false);
+  const [copied,     setCopied]     = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishErr, setPublishErr] = useState('');
+  // show the banner whenever we just published in this session
+  const [justPublished, setJustPublished] = useState(false);
 
   const tpl = PORTFOLIO_TEMPLATES.find(t => t.id === selectedPortfolioTemplate);
 
-  // ✅ FIX: portfolioUrl is ALWAYS a full absolute URL built from window.location.origin
-  // Before publishing: show a preview URL so the user knows what it'll look like
-  // After publishing:  use the real slug returned by the backend
-  const previewSlug = (resumeData.name || 'yourname')
+  /* ── Build the live URL ── */
+  const previewSlug = (resumeData?.name || 'yourname')
     .toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
-  const portfolioUrl = portfolioPublished && portfolioSlug
-    ? `${window.location.origin}/p/${portfolioSlug}`   // ✅ real URL after publish
-    : `${window.location.origin}/p/${previewSlug}`;    // preview hint before publish
+  const liveSlug   = portfolioPublished && portfolioSlug ? portfolioSlug : null;
+  const portfolioUrl = liveSlug
+    ? `${window.location.origin}/p/${liveSlug}`
+    : `${window.location.origin}/p/${previewSlug}`;
 
-  // ✅ FIX: publish handler stores the slug from the backend response
+  /* ── Publish handler — always uses portfolioAPI (handles auth) ── */
+  // ─── Publish handler ────────────────────────────────────────
+  // ✅ FIX: passes selectedPortfolioTemplate + portfolioStyle directly
+  //    to portfolioAPI.publish() so templateId is saved atomically
+  //    with isPublished=true — no more race conditions.
   const handlePublish = async () => {
     setPublishing(true);
     setPublishErr('');
     try {
+      // Step 1: save all resume data fields to DB
       await savePortfolioToBackend();
-      const res = await portfolioAPI.publish();
-      setPortfolioSlug(res.slug);       // ✅ use slug from backend, not a local guess
+
+      // Step 2: publish — send templateId + style explicitly so the
+      //         controller saves them even if step 1 had any issue
+      const res = await portfolioAPI.publish(
+        selectedPortfolioTemplate,
+        portfolioStyle
+      );
+
+      setPortfolioSlug(res.slug);
       setPortfolioPublished(true);
     } catch (err) {
       setPublishErr(err.message || 'Failed to publish. Please try again.');
@@ -416,8 +394,7 @@ const PortfolioPreviewPage = () => {
       setPublishing(false);
     }
   };
-
-  // ✅ FIX: copy the correct full URL (no extra https:// prefix)
+  /* ── Copy link handler ── */
   const handleCopy = () => {
     navigator.clipboard?.writeText(portfolioUrl).catch(() => {});
     setCopied(true);
@@ -427,44 +404,83 @@ const PortfolioPreviewPage = () => {
   return (
     <div className="pfprev-page">
       <div className="container">
+
+        {/* ════════════════════════════════════════════
+            TOP BAR
+            ← Customize  |  Portfolio Preview [badge]  |  Edit · Publish · Copy
+        ════════════════════════════════════════════ */}
         <div className="pfprev-topbar">
+          {/* Left */}
           <button className="btn-ghost back-btn" onClick={() => navigate('/portfolio/customize')}>
             <ArrowLeft size={15} /> Customize
           </button>
+
+          {/* Centre */}
           <div className="pfprev-topbar-center">
-            <Monitor size={15}/><span>Portfolio Preview</span>
+            <Monitor size={15}/>
+            <span>Portfolio Preview</span>
             {tpl && <span className="tpl-badge">{tpl.name}</span>}
           </div>
+
+          {/* Right — Edit + Publish (always) + Copy (only when published) */}
           <div className="pfprev-actions">
-            <button className="btn-secondary" onClick={() => navigate('/portfolio/customize')}>
+            <button
+              className="btn-secondary"
+              onClick={() => navigate('/portfolio/customize')}
+            >
               <Edit3 size={15}/> Edit
             </button>
-            {!portfolioPublished
-              ? (
-                <button className="btn-primary" onClick={handlePublish} disabled={publishing}>
-                  {publishing
-                    ? <span className="publish-dots"><span/><span/><span/></span>
-                    : <><Globe size={15}/> Publish Portfolio</>}
-                </button>
+
+            {/* ✅ Publish button is ALWAYS visible */}
+            <button
+              className={`btn-primary publish-btn ${publishing ? 'loading' : ''}`}
+              onClick={handlePublish}
+              disabled={publishing}
+            >
+              {publishing ? (
+                <>
+                  <span className="pfprev-spinner" />
+                  Publishing…
+                </>
+              ) : portfolioPublished ? (
+                <>
+                  <RefreshCw size={14}/> Re-publish
+                </>
               ) : (
-                <button className="btn-success" onClick={handleCopy}>
-                  {copied ? <><Check size={15}/> Copied!</> : <><Copy size={15}/> Copy Link</>}
-                </button>
+                <>
+                  <Globe size={15}/> Publish Site
+                </>
               )}
+            </button>
+
+            {/* Copy link — only shown once published */}
+            {portfolioPublished && (
+              <button className="btn-secondary" onClick={handleCopy}>
+                {copied
+                  ? <><Check size={15}/> Copied!</>
+                  : <><Copy size={15}/> Copy Link</>}
+              </button>
+            )}
           </div>
         </div>
 
+        {/* ── Error bar ── */}
         {publishErr && (
-          <div className="publish-error animate-fadeIn">⚠️ {publishErr}</div>
+          <div className="publish-error animate-fadeIn">
+            ⚠️ {publishErr}
+          </div>
         )}
 
+        {/* ════════════════════════════════════════════
+            PUBLISHED BANNER
+            Shown whenever portfolio is live
+        ════════════════════════════════════════════ */}
         {portfolioPublished && (
           <div className="published-banner animate-fadeIn">
             <div className="published-banner-left">
               <span className="pub-icon">🎉</span>
               <div>
                 <p className="pub-title">Your portfolio is live!</p>
-                {/* ✅ FIX: href uses portfolioUrl directly — no extra https:// prefix */}
                 <a
                   href={portfolioUrl}
                   className="pub-url"
@@ -477,9 +493,10 @@ const PortfolioPreviewPage = () => {
             </div>
             <div className="pub-actions">
               <button className="btn-ghost pub-copy-btn" onClick={handleCopy}>
-                {copied ? <><Check size={13}/> Copied</> : <><Copy size={13}/> Copy URL</>}
+                {copied
+                  ? <><Check size={13}/> Copied</>
+                  : <><Copy size={13}/> Copy URL</>}
               </button>
-              {/* ✅ FIX: Visit Site uses portfolioUrl directly — no extra https:// prefix */}
               <a
                 href={portfolioUrl}
                 target="_blank"
@@ -492,6 +509,9 @@ const PortfolioPreviewPage = () => {
           </div>
         )}
 
+        {/* ════════════════════════════════════════════
+            BROWSER CHROME + PREVIEW
+        ════════════════════════════════════════════ */}
         <div className="browser-wrap">
           <div className="browser-chrome">
             <div className="browser-dots">
@@ -501,18 +521,24 @@ const PortfolioPreviewPage = () => {
             </div>
             <div className="browser-url-bar">
               <Globe size={12}/>
-              <span>{portfolioPublished ? portfolioUrl : 'preview — not yet published'}</span>
+              <span>
+                {portfolioPublished
+                  ? portfolioUrl
+                  : `preview — not yet published`}
+              </span>
             </div>
           </div>
+
           <div className="portfolio-site">
             <PortfolioRenderer
               templateId={selectedPortfolioTemplate}
               data={resumeData}
               style={portfolioStyle}
-              pages={portfolioStyle.pageOrder || ['Home','About','Projects','Skills','Contact']}
+              pages={portfolioStyle?.pageOrder || ['Home','About','Projects','Skills','Contact']}
             />
           </div>
         </div>
+
       </div>
     </div>
   );

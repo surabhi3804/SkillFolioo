@@ -4,6 +4,9 @@ import { useApp } from '../context/AppContext';
 import { CheckCircle, ArrowRight, Sparkles, Sun, Moon } from 'lucide-react';
 import './PortfolioTemplatesPage.css';
 
+
+
+/* ─── Template definitions ─────────────────────────────────────── */
 export const PORTFOLIO_TEMPLATES = [
   {
     id: 'midnight-dev',
@@ -65,10 +68,8 @@ export const PORTFOLIO_TEMPLATES = [
 const MiniPreview = ({ template }) => {
   const previews = {
 
-    /* 1. Midnight Dev — like the reference: dark, purple/pink gradient name, nav, hero, skills */
     'midnight-dev': (
       <div style={{ background: '#0A0A0F', height: '100%', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
-        {/* Navbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', borderBottom: '1px solid rgba(124,58,237,0.2)', flexShrink: 0 }}>
           <div style={{ background: 'linear-gradient(90deg,#7C3AED,#EC4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: 10, fontWeight: 700 }}>Surabhi Tyagi</div>
           <div style={{ display: 'flex', gap: 7 }}>
@@ -77,13 +78,10 @@ const MiniPreview = ({ template }) => {
             ))}
           </div>
         </div>
-        {/* Hero */}
         <div style={{ padding: '18px 14px 10px', flexShrink: 0 }}>
           <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)', marginBottom: 5 }}>Hi, I'm</div>
           <div style={{ fontSize: 16, fontWeight: 800, background: 'linear-gradient(90deg,#fff 30%,#7C3AED,#EC4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1.2, marginBottom: 4 }}>Surabhi Tyagi</div>
-          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 2 }}>
-            Web Developer<span style={{ display: 'inline-block', width: 1, height: 10, background: '#7C3AED', marginLeft: 2, animation: 'blink 1s infinite' }} />
-          </div>
+          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)', marginBottom: 8 }}>Web Developer</div>
           <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.35)', lineHeight: 1.6, marginBottom: 10, maxWidth: '80%' }}>Passionate about creating elegant solutions to complex problems.</div>
           <div style={{ display: 'flex', gap: 6 }}>
             <div style={{ height: 16, width: 56, background: '#7C3AED', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -94,7 +92,6 @@ const MiniPreview = ({ template }) => {
             </div>
           </div>
         </div>
-        {/* Skills row */}
         <div style={{ padding: '8px 14px', borderTop: '1px solid rgba(124,58,237,0.15)', marginTop: 'auto' }}>
           <div style={{ fontSize: 7, color: '#7C3AED', marginBottom: 5, fontWeight: 600 }}>Skills & Expertise</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
@@ -106,10 +103,8 @@ const MiniPreview = ({ template }) => {
       </div>
     ),
 
-    /* 2. Clean Light — bright split hero, photo circle, skill cards */
     'clean-light': (
       <div style={{ background: '#fff', height: '100%', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
-        {/* Navbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', borderBottom: '1px solid #E2E8F0', flexShrink: 0, background: '#fff' }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: '#6D28D9' }}>Portfolio</div>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -118,9 +113,7 @@ const MiniPreview = ({ template }) => {
             ))}
           </div>
         </div>
-        {/* Split hero */}
         <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-          {/* Left text */}
           <div style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <div style={{ fontSize: 7, color: '#6D28D9', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Hello, I'm</div>
             <div style={{ fontSize: 14, fontWeight: 800, color: '#1E293B', lineHeight: 1.2, marginBottom: 4 }}>Your Name</div>
@@ -135,12 +128,10 @@ const MiniPreview = ({ template }) => {
               </div>
             </div>
           </div>
-          {/* Right photo */}
           <div style={{ width: '38%', background: 'linear-gradient(160deg,#F3F0FF,#E0F2FE)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'linear-gradient(135deg,#6D28D9,#0EA5E9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#fff', fontWeight: 700, border: '3px solid #fff', boxShadow: '0 4px 12px rgba(109,40,217,0.3)' }}>S</div>
           </div>
         </div>
-        {/* Skill cards */}
         <div style={{ padding: '8px 12px', borderTop: '1px solid #F1F5F9', background: '#FAFAFA' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5 }}>
             {[['⚡','Frontend'],['🛠','Tools'],['🗄','Backend']].map(([icon, label], i) => (
@@ -154,19 +145,15 @@ const MiniPreview = ({ template }) => {
       </div>
     ),
 
-    /* 3. Creative Gradient — bold oversized gradient hero + project grid */
     'creative-gradient': (
       <div style={{ background: 'linear-gradient(135deg,#0D0221 0%,#1a0535 50%,#0D0221 100%)', height: '100%', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif', overflow: 'hidden', position: 'relative' }}>
-        {/* glow orb */}
         <div style={{ position: 'absolute', top: 30, left: '40%', width: 80, height: 80, background: 'rgba(236,72,153,0.2)', borderRadius: '50%', filter: 'blur(30px)', pointerEvents: 'none' }} />
-        {/* Navbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', position: 'relative', zIndex: 1, flexShrink: 0 }}>
           <div style={{ width: 20, height: 20, borderRadius: 6, background: 'linear-gradient(135deg,#EC4899,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#fff' }}>S</div>
           <div style={{ display: 'flex', gap: 8 }}>
             {['Work','About','Contact'].map((l,i) => <div key={i} style={{ fontSize: 7, color: 'rgba(255,255,255,0.5)' }}>{l}</div>)}
           </div>
         </div>
-        {/* Big hero */}
         <div style={{ padding: '12px 14px 0', position: 'relative', zIndex: 1, flexShrink: 0 }}>
           <div style={{ fontSize: 7, color: 'rgba(245,158,11,0.8)', fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>Creative Developer</div>
           <div style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.1, marginBottom: 6 }}>
@@ -178,7 +165,6 @@ const MiniPreview = ({ template }) => {
             <span style={{ fontSize: 7, color: '#fff', fontWeight: 700 }}>See My Work ✦</span>
           </div>
         </div>
-        {/* Project cards */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5, padding: '10px 14px 14px', marginTop: 'auto', position: 'relative', zIndex: 1 }}>
           {[['#EC4899','Project 1'],['#F59E0B','Project 2'],['#8B5CF6','Project 3']].map(([c, label], i) => (
             <div key={i} style={{ height: 36, background: 'rgba(255,255,255,0.04)', border: `1px solid ${c}30`, borderTop: `2px solid ${c}`, borderRadius: 8, padding: '5px 6px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
@@ -190,26 +176,21 @@ const MiniPreview = ({ template }) => {
       </div>
     ),
 
-    /* 4. Glassmorphism — aurora bg, glass cards, timeline */
     'glass-dark': (
       <div style={{ background: 'linear-gradient(135deg,#060B18 0%,#0D1B2A 100%)', height: '100%', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif', overflow: 'hidden', position: 'relative' }}>
-        {/* Aurora orbs */}
         <div style={{ position: 'absolute', top: 10, left: 10, width: 70, height: 70, background: 'rgba(14,165,233,0.15)', borderRadius: '50%', filter: 'blur(25px)' }} />
         <div style={{ position: 'absolute', bottom: 10, right: 10, width: 60, height: 60, background: 'rgba(139,92,246,0.15)', borderRadius: '50%', filter: 'blur(20px)' }} />
-        {/* Glass Nav */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(14,165,233,0.15)', position: 'relative', zIndex: 1, flexShrink: 0 }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: '#0EA5E9' }}>Portfolio</div>
           <div style={{ display: 'flex', gap: 7 }}>
             {['Home','About','Skills','Contact'].map((l,i) => <div key={i} style={{ fontSize: 7, color: 'rgba(224,242,254,0.4)' }}>{l}</div>)}
           </div>
         </div>
-        {/* Hero */}
         <div style={{ padding: '14px 14px 8px', position: 'relative', zIndex: 1, flexShrink: 0 }}>
           <div style={{ fontSize: 7, color: 'rgba(14,165,233,0.8)', fontWeight: 600, marginBottom: 5, letterSpacing: 1.5, textTransform: 'uppercase' }}>Welcome to my portfolio</div>
           <div style={{ fontSize: 15, fontWeight: 800, color: '#E0F2FE', lineHeight: 1.2, marginBottom: 4 }}>Your Name</div>
           <div style={{ fontSize: 8.5, color: '#0EA5E9', fontWeight: 600, marginBottom: 8 }}>Full Stack Developer</div>
         </div>
-        {/* Glass cards */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, padding: '0 14px', position: 'relative', zIndex: 1, flexShrink: 0 }}>
           {[['About Me','Passionate developer...'],['Experience','2+ years building...']].map(([title, desc], i) => (
             <div key={i} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', borderRadius: 10, padding: '8px 9px' }}>
@@ -218,7 +199,6 @@ const MiniPreview = ({ template }) => {
             </div>
           ))}
         </div>
-        {/* Timeline */}
         <div style={{ padding: '8px 14px 12px', position: 'relative', zIndex: 1, marginTop: 8 }}>
           <div style={{ fontSize: 7, color: '#0EA5E9', fontWeight: 600, marginBottom: 6 }}>Experience</div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
@@ -235,17 +215,14 @@ const MiniPreview = ({ template }) => {
       </div>
     ),
 
-    /* 5. Minimal Light — white, black typography, red accents, works list */
     'minimal-light': (
       <div style={{ background: '#FAFAFA', height: '100%', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
-        {/* Nav */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px', borderBottom: '1px solid #E4E4E7', flexShrink: 0 }}>
           <div style={{ fontSize: 10, fontWeight: 800, color: '#18181B', letterSpacing: -0.5 }}>YN.</div>
           <div style={{ display: 'flex', gap: 9 }}>
             {['Work','About','Contact'].map((l,i) => <div key={i} style={{ fontSize: 7, color: '#71717A', fontWeight: 500 }}>{l}</div>)}
           </div>
         </div>
-        {/* Hero */}
         <div style={{ padding: '18px 14px 10px', borderBottom: '1px solid #E4E4E7', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <div style={{ height: 2, width: 20, background: '#DC2626' }} />
@@ -257,10 +234,9 @@ const MiniPreview = ({ template }) => {
           <div style={{ fontSize: 7, color: '#71717A', lineHeight: 1.6, marginBottom: 10 }}>Full-stack developer focused on clean, performant interfaces.</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ height: 18, width: 52, background: '#18181B', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 6.5, color: '#fff', fontWeight: 700 }}>View Work</span></div>
-            <div style={{ fontSize: 6.5, color: '#DC2626', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>Resume ↗</div>
+            <div style={{ fontSize: 6.5, color: '#DC2626', fontWeight: 600 }}>Resume ↗</div>
           </div>
         </div>
-        {/* Selected work list */}
         <div style={{ padding: '8px 14px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 }}>
             <div style={{ fontSize: 7, fontWeight: 700, color: '#18181B', textTransform: 'uppercase', letterSpacing: 1 }}>Selected Work</div>
@@ -276,12 +252,9 @@ const MiniPreview = ({ template }) => {
       </div>
     ),
 
-    /* 6. Neon Cyber — jet black, cyan/purple glow, skill cards, glowing timeline */
     'neon-cyber': (
       <div style={{ background: '#020817', height: '100%', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif', overflow: 'hidden', position: 'relative' }}>
-        {/* scan line effect */}
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(34,211,238,0.015) 3px,rgba(34,211,238,0.015) 4px)', pointerEvents: 'none', zIndex: 0 }} />
-        {/* Nav */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', borderBottom: '1px solid rgba(34,211,238,0.15)', position: 'relative', zIndex: 1, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <div style={{ width: 8, height: 8, background: '#22D3EE', borderRadius: 2, boxShadow: '0 0 8px #22D3EE' }} />
@@ -291,7 +264,6 @@ const MiniPreview = ({ template }) => {
             {['Home','Skills','Projects','Contact'].map((l,i) => <div key={i} style={{ fontSize: 7, color: 'rgba(226,232,240,0.35)', letterSpacing: 0.5 }}>{l}</div>)}
           </div>
         </div>
-        {/* Hero */}
         <div style={{ padding: '14px 14px 8px', position: 'relative', zIndex: 1, flexShrink: 0 }}>
           <div style={{ fontSize: 7, color: 'rgba(168,85,247,0.8)', fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 5 }}>// Full Stack Developer</div>
           <div style={{ fontSize: 16, fontWeight: 900, lineHeight: 1.15, marginBottom: 4 }}>
@@ -308,7 +280,6 @@ const MiniPreview = ({ template }) => {
             </div>
           </div>
         </div>
-        {/* Neon skill tags */}
         <div style={{ padding: '0 14px 8px', position: 'relative', zIndex: 1, flexShrink: 0 }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
             {[['React','#22D3EE'],['Node.js','#A855F7'],['Python','#22D3EE'],['AWS','#A855F7'],['Docker','#22D3EE']].map(([s,c],i) => (
@@ -316,7 +287,6 @@ const MiniPreview = ({ template }) => {
             ))}
           </div>
         </div>
-        {/* Mini project cards */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, padding: '0 14px 12px', position: 'relative', zIndex: 1, marginTop: 'auto' }}>
           {[['#22D3EE','Project Alpha'],['#A855F7','Project Beta']].map(([c, name], i) => (
             <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${c}25`, borderTop: `2px solid ${c}`, borderRadius: 8, padding: '6px 8px', boxShadow: `0 0 10px ${c}10` }}>
@@ -347,7 +317,6 @@ const PortfolioTemplateCard = ({ template, isSelected, onSelect }) => (
         <CheckCircle size={13} /> Selected
       </div>
     )}
-    {/* Theme badge */}
     <div className={`ptpl-theme-badge ${template.theme}`}>
       {template.theme === 'light' ? <Sun size={10} /> : <Moon size={10} />}
       {template.theme === 'light' ? 'Light' : 'Dark'}
@@ -373,17 +342,19 @@ const PortfolioTemplateCard = ({ template, isSelected, onSelect }) => (
 /* ─── Main Page ────────────────────────────────────────────────── */
 const PortfolioTemplatesPage = () => {
   const navigate = useNavigate();
-  const { selectedPortfolioTemplate, setSelectedPortfolioTemplate, setPortfolioStyle } = useApp();
+  const {
+    selectedPortfolioTemplate,
+    setSelectedPortfolioTemplate,
+    portfolioStyle,
+    setPortfolioStyle,
+  } = useApp();
 
   const handleSelect = (template) => {
     setSelectedPortfolioTemplate(template.id);
-    setPortfolioStyle(prev => ({
-      ...prev,
-      ...template.defaultStyle,
-    }));
+    setPortfolioStyle(prev => ({ ...prev, ...template.defaultStyle }));
   };
 
-  const handleContinue = () => {
+  const handleCustomise = () => {
     if (!selectedPortfolioTemplate) return;
     navigate('/portfolio/customize');
   };
@@ -395,7 +366,8 @@ const PortfolioTemplatesPage = () => {
           <p className="section-eyebrow"><Sparkles size={13} /> Portfolio Builder — Step 1 of 3</p>
           <h1 className="ptpl-title">Choose Your Portfolio Style</h1>
           <p className="ptpl-subtitle">
-            Pick a website template that matches your personality. Fully customise colours, fonts, and sections in the next step.
+            Pick a website template that matches your personality. Fully customise colours,
+            fonts, and sections in the next step.
           </p>
           <div className="ptpl-filter-row">
             <span className="ptpl-filter-label">Filter:</span>
@@ -417,21 +389,27 @@ const PortfolioTemplatesPage = () => {
         </div>
 
         <div className="ptpl-footer">
+
+          {/* ── Selected info ── */}
           {selectedPortfolioTemplate && (
             <div className="ptpl-selected-info animate-fadeIn">
               <CheckCircle size={18} color="var(--success)" />
               <span>
-                <strong>{PORTFOLIO_TEMPLATES.find(t => t.id === selectedPortfolioTemplate)?.name}</strong> selected
+                <strong>
+                  {PORTFOLIO_TEMPLATES.find(t => t.id === selectedPortfolioTemplate)?.name}
+                </strong>{' '}selected
               </span>
             </div>
           )}
+
           <button
             className="btn-primary ptpl-continue-btn"
-            onClick={handleContinue}
+            onClick={handleCustomise}
             disabled={!selectedPortfolioTemplate}
           >
             Customise Portfolio <ArrowRight size={17} />
           </button>
+
         </div>
       </div>
     </div>

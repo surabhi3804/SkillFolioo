@@ -70,7 +70,13 @@ const portfolioSchema = new mongoose.Schema(
       },
     ],
 
-    // Portfolio display settings
+    // ✅ FIXED: templateId was missing — Mongoose was silently dropping it on every save
+    templateId: {
+      type: String,
+      default: 'midnight-dev',
+    },
+
+    // Portfolio display settings (colours, fonts, layout)
     style: {
       type: mongoose.Schema.Types.Mixed,
       default: {},
@@ -81,7 +87,7 @@ const portfolioSchema = new mongoose.Schema(
     slug: {
       type: String,
       unique: true,
-      sparse: true, // allows multiple null values
+      sparse: true,
     },
   },
   { timestamps: true }

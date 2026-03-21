@@ -1,5 +1,6 @@
+// backend/models/User.js
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const bcrypt   = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   name:     { type: String, required: true, trim: true },
@@ -7,10 +8,15 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, minlength: 6 },
   avatar:   { type: String, default: '' },
   plan:     { type: String, enum: ['free', 'pro'], default: 'free' },
-  createdAt:{ type: Date, default: Date.now }
+
+  // ── Forgot password fields ───────────────────────────────
+  resetPasswordToken:   { type: String,   default: undefined },
+  resetPasswordExpires: { type: Date,     default: undefined },
+
+  createdAt: { type: Date, default: Date.now },
 });
 
-// ✅ Mongoose v8 — no 'next' callback needed
+// Hash password before save
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 12);

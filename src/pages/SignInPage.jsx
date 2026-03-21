@@ -1,41 +1,45 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { Eye, EyeOff, Zap, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, Zap, ArrowRight, ArrowLeft, Mail } from 'lucide-react';
 import './SignInPage.css';
-// Updated: Login + Create Account tabs
 
+// view: 'auth' | 'forgot' | 'forgot-sent'
 const SignInPage = () => {
   const navigate = useNavigate();
   const { loginWithBackend, registerWithBackend } = useApp();
 
-  const [isLogin, setIsLogin]   = useState(true);
-  const [form, setForm]         = useState({ name: '', email: '', password: '' });
-  const [errors, setErrors]     = useState({});
+  const [view,     setView]     = useState('auth');   // 'auth' | 'forgot' | 'forgot-sent'
+  const [isLogin,  setIsLogin]  = useState(true);
+  const [form,     setForm]     = useState({ name: '', email: '', password: '' });
+  const [errors,   setErrors]   = useState({});
   const [showPass, setShowPass] = useState(false);
-  const [loading, setLoading]   = useState(false);
+  const [loading,  setLoading]  = useState(false);
   const [apiError, setApiError] = useState('');
 
+  // Forgot password state
+  const [forgotEmail,  setForgotEmail]  = useState('');
+  const [forgotError,  setForgotError]  = useState('');
+  const [forgotLoading,setForgotLoading]= useState(false);
+
+  /* ── Validation ── */
   const validate = () => {
     const errs = {};
-    if (!isLogin && (!form.name || form.name.trim().length < 2)) {
+    if (!isLogin && (!form.name || form.name.trim().length < 2))
       errs.name = 'Please enter your full name.';
-    }
-    if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       errs.email = 'Please enter a valid email address.';
-    }
-    if (!form.password || form.password.length <= 6) {
+    if (!form.password || form.password.length <= 6)
       errs.password = 'Password must be more than 6 characters.';
-    }
     return errs;
   };
 
+  /* ── Sign in / Sign up submit ── */
   const handleSubmit = async () => {
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
 
-    setLoading(true);
-    setApiError('');
+    setLoading(true); setApiError('');
     try {
       if (isLogin) {
         await loginWithBackend(form.email, form.password);
@@ -56,6 +60,142 @@ const SignInPage = () => {
     if (apiError) setApiError('');
   };
 
+  /* ── Forgot password submit ── */
+  const handleForgotSubmit = async () => {
+    if (!forgotEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgotEmail)) {
+      setForgotError('Please enter a valid email address.'); return;
+    }
+    setForgotLoading(true); setForgotError('');
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/auth/forgot-password`,
+        {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ email: forgotEmail }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Request failed.');
+      setView('forgot-sent');
+    } catch (err) {
+      setForgotError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const switchTab = (toLogin) => {
+    setIsLogin(toLogin); setApiError(''); setErrors({});
+  };
+
+  const goToForgot = () => {
+    setForgotEmail(form.email); // pre-fill with whatever they typed
+    setForgotError('');
+    setView('forgot');
+  };
+
+  const goBack = () => { setView('auth'); setForgotError(''); };
+
+  /* ══════════════════════════════════════════════════════════
+     RENDER — Forgot sent confirmation
+  ══════════════════════════════════════════════════════════ */
+  if (view === 'forgot-sent') {
+    return (
+      <div className="signin-page">
+        <div className="signin-bg-orb orb-1" />
+        <div className="signin-bg-orb orb-2" />
+        <div className="signin-card animate-fadeInUp">
+          <div className="signin-logo">
+            <div className="brand-icon-lg"><Zap size={22} /></div>
+            <span className="brand-name-lg">SkillFolio</span>
+          </div>
+
+          <div className="forgot-sent-icon">
+            <Mail size={32} strokeWidth={1.5} />
+          </div>
+          <h1 className="signin-title">Check your inbox</h1>
+          <p className="signin-subtitle" style={{ marginBottom: 28 }}>
+            We sent a password reset link to <strong style={{ color: 'var(--text)' }}>{forgotEmail}</strong>.
+            The link expires in 15 minutes.
+          </p>
+
+          <p className="signin-footer-note" style={{ marginBottom: 20 }}>
+            Didn't receive it? Check your spam folder or{' '}
+            <button className="signin-switch-btn" onClick={() => setView('forgot')}>
+              try again
+            </button>.
+          </p>
+
+          <button className="btn-secondary back-btn" onClick={() => setView('auth')}>
+            <ArrowLeft size={15} /> Back to Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     RENDER — Forgot password form
+  ══════════════════════════════════════════════════════════ */
+  if (view === 'forgot') {
+    return (
+      <div className="signin-page">
+        <div className="signin-bg-orb orb-1" />
+        <div className="signin-bg-orb orb-2" />
+        <div className="signin-card animate-fadeInUp">
+          <div className="signin-logo">
+            <div className="brand-icon-lg"><Zap size={22} /></div>
+            <span className="brand-name-lg">SkillFolio</span>
+          </div>
+
+          <h1 className="signin-title">Forgot password?</h1>
+          <p className="signin-subtitle">
+            Enter your email and we'll send you a reset link.
+          </p>
+
+          {forgotError && <div className="api-error-msg">{forgotError}</div>}
+
+          <div className="signin-form">
+            <div className="form-group">
+              <label className="form-label">Email Address</label>
+              <input
+                type="email"
+                className={`form-input ${forgotError ? 'input-error' : ''}`}
+                placeholder="you@example.com"
+                value={forgotEmail}
+                onChange={e => { setForgotEmail(e.target.value); setForgotError(''); }}
+                onKeyDown={e => e.key === 'Enter' && handleForgotSubmit()}
+                autoFocus
+              />
+            </div>
+
+            <button
+              className="btn-primary signin-btn"
+              onClick={handleForgotSubmit}
+              disabled={forgotLoading}
+            >
+              {forgotLoading ? (
+                <span className="signin-loading">
+                  <span className="loader-dot" /><span className="loader-dot" /><span className="loader-dot" />
+                </span>
+              ) : (
+                <>Send Reset Link <ArrowRight size={17} /></>
+              )}
+            </button>
+
+            <button className="btn-secondary back-btn" onClick={goBack}>
+              <ArrowLeft size={15} /> Back to Sign In
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     RENDER — Main auth view (Sign In / Sign Up)
+  ══════════════════════════════════════════════════════════ */
   return (
     <div className="signin-page">
       <div className="signin-bg-orb orb-1" />
@@ -74,10 +214,10 @@ const SignInPage = () => {
 
         {/* Toggle tabs */}
         <div className="signin-tabs">
-          <button className={`signin-tab ${isLogin ? 'active' : ''}`} onClick={() => { setIsLogin(true); setApiError(''); setErrors({}); }}>
+          <button className={`signin-tab ${isLogin ? 'active' : ''}`} onClick={() => switchTab(true)}>
             Sign In
           </button>
-          <button className={`signin-tab ${!isLogin ? 'active' : ''}`} onClick={() => { setIsLogin(false); setApiError(''); setErrors({}); }}>
+          <button className={`signin-tab ${!isLogin ? 'active' : ''}`} onClick={() => switchTab(false)}>
             Sign Up
           </button>
         </div>
@@ -85,7 +225,7 @@ const SignInPage = () => {
         {apiError && <div className="api-error-msg">{apiError}</div>}
 
         <div className="signin-form">
-          {/* Name field — only for register */}
+          {/* Name — register only */}
           {!isLogin && (
             <div className="form-group">
               <label className="form-label">Full Name</label>
@@ -113,7 +253,15 @@ const SignInPage = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            {/* Password label row with "Forgot password?" link */}
+            <div className="form-label-row">
+              <label className="form-label">Password</label>
+              {isLogin && (
+                <button type="button" className="forgot-link" onClick={goToForgot}>
+                  Forgot password?
+                </button>
+              )}
+            </div>
             <div className="password-wrap">
               <input
                 type={showPass ? 'text' : 'password'} name="password"

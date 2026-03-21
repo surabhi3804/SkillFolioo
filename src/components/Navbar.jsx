@@ -6,39 +6,48 @@ import './Navbar.css';
 
 const Navbar = () => {
   const { isLoggedIn, logout } = useApp();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [portfolioDropOpen, setPortfolioDropOpen] = useState(false);
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const [menuOpen,           setMenuOpen]           = useState(false);
+  const [portfolioDropOpen,  setPortfolioDropOpen]  = useState(false);
+  const [analyserDropOpen,   setAnalyserDropOpen]   = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
+  const handleLogout = () => { logout(); navigate('/'); };
 
+  // Original nav links — untouched
   const navLinks = isLoggedIn ? [
-    { label: 'Templates', path: '/templates' },
-    { label: 'Resume Builder', path: '/builder' },
-    { label: 'ATS Score', path: '/ats-score' },
+    { label: 'Templates',       path: '/templates'       },
+    { label: 'Resume Builder',  path: '/builder'         },
+    { label: 'ATS Score',       path: '/ats-score'       },
     { label: 'Skill Analytics', path: '/skill-analytics' },
+<<<<<<< HEAD
     { label: 'AI Assistant', path: '/chatbot' },
+=======
+    { label: 'AI Assistant',    path: '/chatbot'         },
+>>>>>>> c78c77f7 (Updated project files)
   ] : [];
 
   const portfolioLinks = [
-    { label: 'Choose Template', path: '/portfolio/templates' },
-    { label: 'Customize', path: '/portfolio/customize' },
-    { label: 'Preview & Publish', path: '/portfolio/preview' },
+    { label: 'Choose Template',  path: '/portfolio/templates' },
+    { label: 'Customize',        path: '/portfolio/customize' },
+    { label: 'Preview & Publish',path: '/portfolio/preview'   },
   ];
 
-  const isPortfolioActive = location.pathname.startsWith('/portfolio');
+  // ✅ NEW: Resume Analyser sub-links
+  const resumeAnalyserLinks = [
+    { label: '📄 Upload & Analyse', path: '/resume/analyse'  },
+    { label: '🎯 ATS Score',        path: '/ats-score'       },
+    { label: '📊 Skill Analytics',  path: '/skill-analytics' },
+  ];
+
+  const isPortfolioActive      = location.pathname.startsWith('/portfolio');
+  const isResumeAnalyserActive = location.pathname === '/resume/analyse';
 
   return (
     <nav className="navbar">
       <div className="container navbar-inner">
         <div className="navbar-brand" onClick={() => navigate(isLoggedIn ? '/templates' : '/')}>
-          <div className="brand-icon">
-            <Zap size={18} />
-          </div>
+          <div className="brand-icon"><Zap size={18} /></div>
           <span className="brand-name">SkillFolio</span>
         </div>
 
@@ -55,7 +64,31 @@ const Navbar = () => {
                 </button>
               ))}
 
-              {/* Portfolio dropdown */}
+              {/* ✅ NEW Resume Analyser dropdown */}
+              <div
+                className={`nav-dropdown-wrap ${isResumeAnalyserActive ? 'active' : ''}`}
+                onMouseEnter={() => setAnalyserDropOpen(true)}
+                onMouseLeave={() => setAnalyserDropOpen(false)}
+              >
+                <button className={`nav-link nav-dropdown-trigger ${isResumeAnalyserActive ? 'active' : ''}`}>
+                  Resume Analyser <ChevronDown size={14} />
+                </button>
+                {analyserDropOpen && (
+                  <div className="nav-dropdown">
+                    {resumeAnalyserLinks.map(link => (
+                      <button
+                        key={link.label}
+                        className={`nav-dropdown-item ${location.pathname === link.path ? 'active' : ''}`}
+                        onClick={() => { navigate(link.path); setAnalyserDropOpen(false); setMenuOpen(false); }}
+                      >
+                        {link.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Portfolio dropdown — unchanged */}
               <div
                 className={`nav-dropdown-wrap ${isPortfolioActive ? 'active' : ''}`}
                 onMouseEnter={() => setPortfolioDropOpen(true)}
@@ -83,6 +116,7 @@ const Navbar = () => {
                 <LogOut size={15} /> Sign Out
               </button>
             </div>
+
             <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)}>
               {menuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>

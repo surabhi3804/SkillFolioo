@@ -1,14 +1,13 @@
-// backend/routes/ats.js
+// backend/routes/resumeParse.js
 const express   = require('express');
 const router    = express.Router();
 const multer    = require('multer');
 const { protect } = require('../middleware/auth');
-const { scoreATS } = require('../controllers/atsController');
+const { parseResume } = require('../controllers/resumeParserController');
 
-// multer — memory storage (we only need the buffer)
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits:  { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  limits:  { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const allowed = [
       'application/pdf',
@@ -25,12 +24,10 @@ const upload = multer({
 });
 
 /**
- * POST /api/ats/score
- *
- * Accepts either:
- *   a) JSON body  — { resumeText: string, targetRoles: string[] }
- *   b) FormData   — resume (file) + targetRoles (JSON-stringified array)
+ * POST /api/resume/parse
+ * Accepts multipart/form-data with field "resume"
+ * Returns: { text, wordCount, fileName }
  */
-router.post('/score', protect, upload.single('resume'), scoreATS);
+router.post('/parse', protect, upload.single('resume'), parseResume);
 
 module.exports = router;

@@ -1,3 +1,7 @@
+/* ─────────────────────────────────────────────────────────────
+   SignInPage.css  — Sign In + Forgot Password + Reset Password
+   ───────────────────────────────────────────────────────────── */
+
 .signin-page {
   min-height: 100vh;
   display: flex;
@@ -37,6 +41,7 @@
   z-index: 1;
 }
 
+/* ── Logo ── */
 .signin-logo {
   display: flex;
   align-items: center;
@@ -91,6 +96,7 @@
   background: rgba(124, 58, 237, 0.08);
 }
 
+/* ── Headings ── */
 .signin-title {
   font-size: 26px;
   font-weight: 700;
@@ -103,9 +109,10 @@
   font-size: 14px;
   color: var(--text-muted);
   margin-bottom: 24px;
+  line-height: 1.6;
 }
 
-/* ── API Error ── */
+/* ── API / general error ── */
 .api-error-msg {
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.35);
@@ -117,9 +124,35 @@
   text-align: center;
 }
 
+/* ── Form ── */
 .signin-form { display: flex; flex-direction: column; gap: 0; }
-.form-group { margin-bottom: 18px; }
+.form-group  { margin-bottom: 18px; }
 
+/* Password label row — label + "Forgot password?" link side by side */
+.form-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.form-label-row .form-label { margin-bottom: 0; }
+
+/* ── Forgot password link (inline with label) ── */
+.forgot-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.forgot-link:hover { opacity: 0.75; text-decoration: underline; }
+
+/* ── Password visibility toggle ── */
 .password-wrap { position: relative; }
 .show-pass-btn {
   position: absolute;
@@ -135,14 +168,16 @@
 }
 .show-pass-btn:hover { color: var(--primary); }
 
-.input-error { border-color: var(--error) !important; }
-.field-error {
+/* ── Field errors ── */
+.input-error  { border-color: var(--error) !important; }
+.field-error  {
   font-size: 13px;
   color: var(--error);
   margin-top: 5px;
   display: block;
 }
 
+/* ── Buttons ── */
 .signin-btn {
   width: 100%;
   justify-content: center;
@@ -153,6 +188,33 @@
 }
 .signin-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
+/* Secondary / back button */
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+.btn-secondary:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(124, 58, 237, 0.05);
+}
+.back-btn { margin-top: 12px; }
+
+/* ── Loading dots ── */
 .signin-loading {
   display: flex;
   align-items: center;
@@ -165,9 +227,73 @@
   animation: pulse 1s ease infinite;
 }
 .loader-dot:nth-child(2) { animation-delay: 0.15s; }
-.loader-dot:nth-child(3) { animation-delay: 0.3s; }
+.loader-dot:nth-child(3) { animation-delay: 0.30s; }
 
-/* ── Switch link ── */
+@keyframes pulse {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.75); }
+}
+
+/* ── Forgot password — email sent icon ── */
+.forgot-sent-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: rgba(124, 58, 237, 0.1);
+  border: 1.5px solid rgba(124, 58, 237, 0.2);
+  color: var(--primary);
+  margin: 0 auto 20px;
+}
+
+/* ── Reset password — success icon ── */
+.reset-success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: rgba(5, 150, 105, 0.1);
+  border: 1.5px solid rgba(5, 150, 105, 0.25);
+  color: #059669;
+  margin: 0 auto 20px;
+}
+
+/* ── Password strength bar ── */
+.password-strength-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -8px 0 14px;
+}
+.password-strength-bar {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+.strength-segment {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+.strength-label {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 42px;
+  text-align: right;
+}
+
+/* ── Footer note & switch link ── */
+.signin-footer-note {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-light);
+  margin-top: 12px;
+  line-height: 1.6;
+}
 .signin-switch {
   text-align: center;
   font-size: 14px;
@@ -181,20 +307,12 @@
   color: var(--primary);
   font-weight: 600;
   cursor: pointer;
-  font-size: 14px;
+  font-size: inherit;
   font-family: 'Inter', sans-serif;
   padding: 0;
   text-decoration: underline;
 }
 .signin-switch-btn:hover { opacity: 0.8; }
-
-.signin-footer-note {
-  text-align: center;
-  font-size: 12px;
-  color: var(--text-light);
-  margin-top: 12px;
-  line-height: 1.6;
-}
 
 /* ── Builder save row (used in BuilderPage) ── */
 .builder-save-row {
@@ -224,7 +342,8 @@
 .builder-save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .save-error { color: #fca5a5; font-size: 0.8rem; }
 
+/* ── Responsive ── */
 @media (max-width: 500px) {
-  .signin-card { padding: 32px 20px; }
+  .signin-card  { padding: 32px 20px; }
   .signin-title { font-size: 22px; }
 }
