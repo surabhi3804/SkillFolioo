@@ -89,5 +89,16 @@
   margin-bottom: 10px;
 }
 
+.ats-role-custom { border-style: dashed; }
+.ats-role-add { color: var(--primary); border-color: var(--primary); border-style: dashed; }
+.ats-role-add:hover { background: var(--primary); color: #fff; }
+.ats-role-delete { margin-left: 4px; opacity: 0.5; display: inline-flex; }
+.ats-role-delete:hover { opacity: 1; color: #ef4444; }
+.ats-custom-role-input { margin: 12px 0; padding: 12px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
+.ats-custom-role-row { display: flex; gap: 8px; margin-top: 6px; align-items: center; }
+.ats-save-role-btn { padding: 8px 16px; white-space: nowrap; }
+.ats-cancel-role-btn { padding: 8px; background: transparent; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; color: #94a3b8; }
+.ats-cancel-role-btn:hover { border-color: #ef4444; color: #ef4444; }
+
 @media (max-width: 960px) { .ats-page-layout { grid-template-columns: 1fr; } }
 @media (max-width: 580px) { .result-top { flex-direction: column; align-items: flex-start; } .result-stats { gap: 16px; } }

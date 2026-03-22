@@ -37,12 +37,9 @@ function AppInner() {
           <Route path="/ats-score"       element={<ProtectedRoute><ATSScorePage /></ProtectedRoute>} />
           <Route path="/skill-analytics" element={<ProtectedRoute><SkillAnalyticsPage /></ProtectedRoute>} />
           <Route path="/chatbot"         element={<ProtectedRoute><ChatbotPage /></ProtectedRoute>} />
-<<<<<<< HEAD
-=======
 
           {/* ✅ Resume Upload — ATS + Skill Analytics in one place */}
           <Route path="/resume/analyse"  element={<ProtectedRoute><ResumeUploadPage /></ProtectedRoute>} />
->>>>>>> c78c77f7 (Updated project files)
 
           {/* Portfolio flow */}
           <Route path="/portfolio/templates" element={<ProtectedRoute><PortfolioTemplatesPage /></ProtectedRoute>} />

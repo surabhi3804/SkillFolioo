@@ -1,6 +1,7 @@
 // backend/controllers/atsController.js
 const ResumeAnalysis = require('../models/ResumeAnalysis');
 const { extractText } = require('../utils/resumeParse');
+const CustomRole = require('../models/CustomRole');
 
 /* ══════════════════════════════════════════════════════════════
    KEYWORD BANKS
@@ -247,5 +248,42 @@ exports.scoreATS = async (req, res) => {
   } catch (err) {
     console.error('scoreATS error:', err);
     res.status(500).json({ message: err.message || 'ATS scoring failed.' });
+  }
+};
+
+exports.getCustomRoles = async (req, res) => {
+  try {
+    const roles = await CustomRole.find({ user: req.user._id }).sort({ createdAt: -1 });
+    res.json({ success: true, roles });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+ 
+exports.saveCustomRole = async (req, res) => {
+  try {
+    const { label, jd } = req.body;
+    if (!label || !label.trim()) {
+      return res.status(400).json({ success: false, error: 'Role label is required.' });
+    }
+    const existing = await CustomRole.findOne({ user: req.user._id, label: label.trim() });
+    if (existing) {
+      return res.json({ success: true, role: existing, duplicate: true });
+    }
+    const role = await CustomRole.create({ user: req.user._id, label: label.trim(), jd: jd || '' });
+    res.json({ success: true, role });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+ 
+exports.deleteCustomRole = async (req, res) => {
+  try {
+    const role = await CustomRole.findOne({ _id: req.params.id, user: req.user._id });
+    if (!role) return res.status(404).json({ success: false, error: 'Not found.' });
+    await role.deleteOne();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 };
