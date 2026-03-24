@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { TARGET_ROLES, ROLE_SKILLS, ALL_SKILLS } from '../data/staticData';
+import { customRolesAPI } from '../services/api';
 import { BarChart3, Check, Plus, Sparkles, TrendingUp, AlertCircle, CheckCircle, Target, X, Zap } from 'lucide-react';
 import './SkillAnalyticsPage.css';
 
@@ -14,6 +15,11 @@ const SkillAnalyticsPage = () => {
   const [marketResult, setMarketResult] = useState(null);
   const [marketLoading, setMarketLoading] = useState(false);
   const [marketError, setMarketError]   = useState('');
+  const [customRoles,     setCustomRoles]     = useState([]);
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customRoleLabel, setCustomRoleLabel] = useState('');
+  const [customRoleJD,    setCustomRoleJD]    = useState('');
+  const [savingRole,      setSavingRole]      = useState(false);
 
   const userSkills      = resumeData.skills || [];
   const userSkillsLower = userSkills.map(s => s.toLowerCase());
@@ -30,6 +36,33 @@ const SkillAnalyticsPage = () => {
 
   const addSkill    = (skill) => { setResumeData(prev => ({ ...prev, skills: [...(prev.skills || []), skill] })); setQuery(''); };
   const removeSkill = (skill) => { setResumeData(prev => ({ ...prev, skills: (prev.skills || []).filter(s => s !== skill) })); };
+  
+  const handleSaveCustomRole = async () => {
+  if (!customRoleLabel.trim() || !customRoleJD.trim()) return;
+  setSavingRole(true);
+  try {
+    const data = await customRolesAPI.save(customRoleLabel.trim(), customRoleJD.trim());
+    if (data.success) {
+      if (!data.duplicate) setCustomRoles(r => [data.role, ...r]);
+      setLocalRole(data.role._id);
+      setTargetRole(data.role._id);
+      setShowCustomInput(false);
+      setCustomRoleLabel('');
+      setCustomRoleJD('');
+      setMarketResult(null);
+    }
+  } catch (e) { console.error(e); }
+  finally { setSavingRole(false); }
+};
+
+const handleDeleteCustomRole = async (id, e) => {
+  e.stopPropagation();
+  try {
+    await customRolesAPI.delete(id);
+    setCustomRoles(r => r.filter(role => role._id !== id));
+    if (localRole === id) { setLocalRole(''); setTargetRole(''); setMarketResult(null); }
+  } catch (e) { console.error(e); }
+};
 
   // ── 100% free client-side market analysis (no API key needed) ──
   const MARKET_DATA = {
@@ -83,6 +116,11 @@ const SkillAnalyticsPage = () => {
     'Data Analysis': { demand: 'high',   trend: 'rising'    },
   };
 
+useEffect(() => {
+  customRolesAPI.getAll()
+    .then(data => { if (data.success) setCustomRoles(data.roles); })
+    .catch(() => {});
+}, []);
   // High-demand skills recommended per role
   const ROLE_RECOMMENDATIONS = {
     'frontend-developer':    ['TypeScript', 'Next.js', 'TailwindCSS', 'GraphQL', 'Vitest'],
@@ -223,7 +261,7 @@ const SkillAnalyticsPage = () => {
             {/* Role selector */}
             <div className="card">
               <h3 className="card-section-title"><Target size={17} /> Target Role</h3>
-              <div className="analytics-roles">
+                            <div className="analytics-roles">
                 {TARGET_ROLES.filter(r => r.id !== 'other').map(role => (
                   <button key={role.id}
                     className={`analytics-role-btn ${localRole === role.id ? 'active' : ''}`}
@@ -232,7 +270,61 @@ const SkillAnalyticsPage = () => {
                     {role.label}
                   </button>
                 ))}
+
+                {/* Custom roles */}
+                {customRoles.map(role => (
+                  <button key={role._id}
+                    className={`analytics-role-btn analytics-role-custom ${localRole === role._id ? 'active' : ''}`}
+                    onClick={() => { setLocalRole(role._id); setTargetRole(role._id); setMarketResult(null); }}>
+                    {localRole === role._id && <Check size={12} />}
+                    {role.label}
+                    <span className="analytics-role-delete" onClick={(e) => handleDeleteCustomRole(role._id, e)}>
+                      <X size={11} />
+                    </span>
+                  </button>
+                ))}
+
+                {/* Add custom role button */}
+                <button className="analytics-role-btn analytics-role-add" onClick={() => setShowCustomInput(true)}>
+                  <Plus size={12} /> Add Custom Role
+                </button>
               </div>
+
+              {/* Custom role input form */}
+              {showCustomInput && (
+                <div className="ats-custom-role-input" style={{ marginTop: 12 }}>
+                  <label className="form-label">Role Name</label>
+                  <input
+                    type="text" className="form-input"
+                    placeholder="e.g. React Native Developer"
+                    value={customRoleLabel}
+                    onChange={e => setCustomRoleLabel(e.target.value)}
+                    autoFocus
+                    style={{ marginBottom: 10 }}
+                  />
+                  <label className="form-label">
+                    Job Description <span style={{ color: 'var(--error, #ef4444)' }}>*</span>
+                  </label>
+                  <textarea
+                    className="form-input" rows={4}
+                    placeholder="Paste job description to enable accurate skill gap analysis..."
+                    value={customRoleJD}
+                    onChange={e => setCustomRoleJD(e.target.value)}
+                    style={{ marginBottom: 10 }}
+                  />
+                  <div className="ats-custom-role-row">
+                    <button className="btn-primary ats-save-role-btn"
+                      onClick={handleSaveCustomRole}
+                      disabled={!customRoleLabel.trim() || !customRoleJD.trim() || savingRole}>
+                      {savingRole ? 'Saving...' : 'Save Role'}
+                    </button>
+                    <button className="ats-cancel-role-btn"
+                      onClick={() => { setShowCustomInput(false); setCustomRoleLabel(''); setCustomRoleJD(''); }}>
+                      <X size={14} /> Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* AI Market Analysis button */}

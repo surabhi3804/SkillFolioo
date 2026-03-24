@@ -154,5 +154,10 @@
   font-size: 0.78rem;
   text-transform: capitalize;
 }
+.analytics-role-custom { border-style: dashed; }
+.analytics-role-add { color: var(--primary); border-color: var(--primary); border-style: dashed; }
+.analytics-role-add:hover { background: var(--primary); color: #fff; }
+.analytics-role-delete { margin-left: 4px; opacity: 0.5; display: inline-flex; }
+.analytics-role-delete:hover { opacity: 1; color: #ef4444; }
 
 @media (max-width: 860px) { .analytics-layout { grid-template-columns: 1fr; } .analytics-sidebar { position: static; } }
