@@ -6,6 +6,7 @@ import ChatBot from './components/ChatBot';
 import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import SignInPage from './pages/SignInPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import TemplatesPage from './pages/TemplatesPage';
 import BuilderPage from './pages/BuilderPage';
 import ResumePreviewPage from './pages/ResumePreviewPage';
@@ -19,7 +20,7 @@ import PublicPortfolioPage from './pages/PublicPortfolioPage';
 import ResumeUploadPage from './pages/ResumeUploadPage';
 import './styles/global.css';
 
-// ─── Inner app layout (with Navbar + ChatBot) ────────────────
+/* ─── Inner app layout (with Navbar + ChatBot) ────────────────── */
 function AppInner() {
   return (
     <div className="app">
@@ -27,8 +28,9 @@ function AppInner() {
       <main>
         <Routes>
           {/* Public */}
-          <Route path="/"       element={<HomePage />} />
-          <Route path="/signin" element={<SignInPage />} />
+          <Route path="/"                element={<HomePage />} />
+          <Route path="/signin"          element={<SignInPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
           {/* Resume flow */}
           <Route path="/templates"       element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
@@ -37,12 +39,9 @@ function AppInner() {
           <Route path="/ats-score"       element={<ProtectedRoute><ATSScorePage /></ProtectedRoute>} />
           <Route path="/skill-analytics" element={<ProtectedRoute><SkillAnalyticsPage /></ProtectedRoute>} />
           <Route path="/chatbot"         element={<ProtectedRoute><ChatbotPage /></ProtectedRoute>} />
-<<<<<<< HEAD
-=======
 
-          {/* ✅ Resume Upload — ATS + Skill Analytics in one place */}
+          {/* Resume Analyser — ATS + Skill Analytics in one place */}
           <Route path="/resume/analyse"  element={<ProtectedRoute><ResumeUploadPage /></ProtectedRoute>} />
->>>>>>> c78c77f7 (Updated project files)
 
           {/* Portfolio flow */}
           <Route path="/portfolio/templates" element={<ProtectedRoute><PortfolioTemplatesPage /></ProtectedRoute>} />
@@ -58,7 +57,7 @@ function AppInner() {
   );
 }
 
-// ─── Root App — /p/:slug MUST be before /* ────────────────────
+/* ─── Root App — /p/:slug MUST be before /* ─────────────────────── */
 function App() {
   return (
     <BrowserRouter>

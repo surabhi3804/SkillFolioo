@@ -3,7 +3,7 @@ const express   = require('express');
 const router    = express.Router();
 const multer    = require('multer');
 const { protect } = require('../middleware/auth');
-const { scoreATS } = require('../controllers/atsController');
+const { scoreATS, getCustomRoles, saveCustomRole, deleteCustomRole } = require('../controllers/atsController');
 
 // multer — memory storage (we only need the buffer)
 const upload = multer({
@@ -24,13 +24,12 @@ const upload = multer({
   },
 });
 
-/**
- * POST /api/ats/score
- *
- * Accepts either:
- *   a) JSON body  — { resumeText: string, targetRoles: string[] }
- *   b) FormData   — resume (file) + targetRoles (JSON-stringified array)
- */
+// Existing score route
 router.post('/score', protect, upload.single('resume'), scoreATS);
+
+// Custom roles routes
+router.get   ('/custom-roles',     protect, getCustomRoles);
+router.post  ('/custom-roles',     protect, saveCustomRole);
+router.delete('/custom-roles/:id', protect, deleteCustomRole);
 
 module.exports = router;

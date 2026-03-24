@@ -20,11 +20,11 @@ const Navbar = () => {
     { label: 'Resume Builder',  path: '/builder'         },
     { label: 'ATS Score',       path: '/ats-score'       },
     { label: 'Skill Analytics', path: '/skill-analytics' },
-<<<<<<< HEAD
+
     { label: 'AI Assistant', path: '/chatbot' },
-=======
-    { label: 'AI Assistant',    path: '/chatbot'         },
->>>>>>> c78c77f7 (Updated project files)
+
+    
+
   ] : [];
 
   const portfolioLinks = [

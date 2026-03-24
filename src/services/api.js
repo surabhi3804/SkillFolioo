@@ -60,6 +60,12 @@ export const atsAPI = {
   score: ({ resumeText, targetRoles = [] }) =>
     request('POST', '/ats/score', { resumeText, targetRoles }),
 };
+/* ─── Custom Roles API ───────────────────────────────────────── */
+export const customRolesAPI = {
+  getAll: ()          => request('GET',    '/ats/custom-roles'),
+  save:   (label, jd) => request('POST',   '/ats/custom-roles', { label, jd }),
+  delete: (id)        => request('DELETE', `/ats/custom-roles/${id}`),
+};
 
 /* ─── Skills API ─────────────────────────────────────────────── */
 export const skillsAPI = {
