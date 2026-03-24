@@ -1,3 +1,4 @@
+/*skillanalyticspage.css */
 .analytics-page { padding: 48px 0 80px; }
 .analytics-header { text-align: center; margin-bottom: 48px; }
 .analytics-title { font-size: 36px; font-weight: 700; margin-bottom: 12px; }
@@ -36,6 +37,26 @@
   font-size: 12.5px; font-weight: 500; color: var(--primary);
 }
 .skill-remove-x { background: none; border: none; color: var(--primary); cursor: pointer; display: flex; padding: 0; }
+
+/* ── Custom skill chip variant in sidebar ── */
+.user-skill-chip--custom {
+  background: rgba(6, 182, 212, 0.08);
+  border-color: rgba(6, 182, 212, 0.3);
+  color: #0891b2;
+}
+.user-skill-chip--custom .skill-remove-x { color: #0891b2; }
+
+.custom-skill-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(6, 182, 212, 0.15);
+  color: #0891b2;
+  border-radius: 4px;
+  padding: 1px 4px;
+  line-height: 1.4;
+}
 
 .analytics-roles { display: flex; flex-direction: column; gap: 5px; }
 .analytics-role-btn {
@@ -140,6 +161,9 @@
   flex: 1;
   font-weight: 500;
   color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .market-demand-badge {
   padding: 2px 8px;
@@ -155,4 +179,98 @@
   text-transform: capitalize;
 }
 
-@media (max-width: 860px) { .analytics-layout { grid-template-columns: 1fr; } .analytics-sidebar { position: static; } }
+/* ── Custom tag in market demand row ── */
+.market-custom-tag {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(6, 182, 212, 0.15);
+  color: #0891b2;
+  border-radius: 4px;
+  padding: 1px 5px;
+  line-height: 1.4;
+}
+
+.analytics-role-custom { border-style: dashed; }
+.analytics-role-add { color: var(--primary); border-color: var(--primary); border-style: dashed; }
+.analytics-role-add:hover { background: var(--primary); color: #fff; }
+.analytics-role-delete { margin-left: 4px; opacity: 0.5; display: inline-flex; }
+.analytics-role-delete:hover { opacity: 1; color: #ef4444; }
+
+/* ────────────────────────────────────────────────────────────────
+   CUSTOM SKILL INPUT SECTION
+   ──────────────────────────────────────────────────────────────── */
+.custom-skill-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--border);
+}
+
+.custom-skill-hint-text {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.custom-skill-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.custom-skill-input {
+  flex: 1;
+  /* inherits .form-input styles from global */
+}
+
+.custom-skill-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  font-size: 13.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+
+.custom-skill-add-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.custom-skill-error {
+  font-size: 12.5px;
+  color: var(--error, #ef4444);
+  margin-top: 7px;
+}
+
+/* Already-added custom skills list inside the browse section */
+.custom-added-skills-wrap {
+  margin-top: 16px;
+}
+
+.custom-added-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  margin-bottom: 8px;
+}
+
+/* The custom chip displayed in the "Your custom skills" row */
+.custom-chip {
+  background: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  color: #0891b2;
+}
+
+@media (max-width: 860px) {
+  .analytics-layout { grid-template-columns: 1fr; }
+  .analytics-sidebar { position: static; }
+  .custom-skill-input-row { flex-direction: column; align-items: stretch; }
+  .custom-skill-add-btn { justify-content: center; }
+}

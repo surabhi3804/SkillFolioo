@@ -96,7 +96,30 @@
   min-width: 190px;
   padding: 6px;
   z-index: 200;
-  animation: fadeIn 0.15s ease;
+  animation: fadeIn 1s ease;
+}
+/* Ensure no gap between trigger and dropdown */
+.nav-dropdown-wrap {
+  position: relative;
+}
+
+.nav-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  padding-top: 6px; /* ← this creates overlap so mouse doesn't leave the wrap */
+  z-index: 100;
+  min-width: 200px;
+}
+
+/* Add invisible bridge to prevent gap */
+.nav-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 0;
+  right: 0;
+  height: 6px;
 }
 .nav-dropdown-item {
   display: block;

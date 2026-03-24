@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+//skillanakyticspage.jsx
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { TARGET_ROLES, ROLE_SKILLS, ALL_SKILLS } from '../data/staticData';
+import { customRolesAPI } from '../services/api';
 import { BarChart3, Check, Plus, Sparkles, TrendingUp, AlertCircle, CheckCircle, Target, X, Zap } from 'lucide-react';
 import './SkillAnalyticsPage.css';
 
@@ -9,14 +11,29 @@ const SkillAnalyticsPage = () => {
   const [localRole, setLocalRole] = useState(targetRole);
   const [query, setQuery]         = useState('');
 
+  // ── Custom skill input state ──────────────────────────────────
+  const [customSkillInput, setCustomSkillInput] = useState('');
+  const [customSkillError, setCustomSkillError] = useState('');
+  const customSkillRef = useRef(null);
+
   // AI market comparison state
   const [aiTab, setAiTab]               = useState('gap');    // 'gap' | 'market'
   const [marketResult, setMarketResult] = useState(null);
   const [marketLoading, setMarketLoading] = useState(false);
   const [marketError, setMarketError]   = useState('');
+  const [customRoles,     setCustomRoles]     = useState([]);
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customRoleLabel, setCustomRoleLabel] = useState('');
+  const [customRoleJD,    setCustomRoleJD]    = useState('');
+  const [savingRole,      setSavingRole]      = useState(false);
 
   const userSkills      = resumeData.skills || [];
   const userSkillsLower = userSkills.map(s => s.toLowerCase());
+
+  // Track which skills were added as custom (not from predefined lists)
+  const predefinedSkillsLower = ALL_SKILLS.map(s => s.toLowerCase());
+  const customAddedSkills     = userSkills.filter(s => !predefinedSkillsLower.includes(s.toLowerCase()));
+
   const roleSkills      = localRole && localRole !== 'other' ? ROLE_SKILLS[localRole] || [] : [];
 
   const presentSkills = roleSkills.filter(s => userSkillsLower.includes(s.toLowerCase()));
@@ -30,6 +47,53 @@ const SkillAnalyticsPage = () => {
 
   const addSkill    = (skill) => { setResumeData(prev => ({ ...prev, skills: [...(prev.skills || []), skill] })); setQuery(''); };
   const removeSkill = (skill) => { setResumeData(prev => ({ ...prev, skills: (prev.skills || []).filter(s => s !== skill) })); };
+
+  // ── Add a fully custom skill ──────────────────────────────────
+  const handleAddCustomSkill = () => {
+    const trimmed = customSkillInput.trim();
+    if (!trimmed) return;
+
+    if (userSkillsLower.includes(trimmed.toLowerCase())) {
+      setCustomSkillError(`"${trimmed}" is already in your skills.`);
+      return;
+    }
+    if (trimmed.length > 40) {
+      setCustomSkillError('Skill name must be 40 characters or fewer.');
+      return;
+    }
+
+    addSkill(trimmed);
+    setCustomSkillInput('');
+    setCustomSkillError('');
+    customSkillRef.current?.focus();
+  };
+  
+  const handleSaveCustomRole = async () => {
+  if (!customRoleLabel.trim() || !customRoleJD.trim()) return;
+  setSavingRole(true);
+  try {
+    const data = await customRolesAPI.save(customRoleLabel.trim(), customRoleJD.trim());
+    if (data.success) {
+      if (!data.duplicate) setCustomRoles(r => [data.role, ...r]);
+      setLocalRole(data.role._id);
+      setTargetRole(data.role._id);
+      setShowCustomInput(false);
+      setCustomRoleLabel('');
+      setCustomRoleJD('');
+      setMarketResult(null);
+    }
+  } catch (e) { console.error(e); }
+  finally { setSavingRole(false); }
+};
+
+const handleDeleteCustomRole = async (id, e) => {
+  e.stopPropagation();
+  try {
+    await customRolesAPI.delete(id);
+    setCustomRoles(r => r.filter(role => role._id !== id));
+    if (localRole === id) { setLocalRole(''); setTargetRole(''); setMarketResult(null); }
+  } catch (e) { console.error(e); }
+};
 
   // ── 100% free client-side market analysis (no API key needed) ──
   const MARKET_DATA = {
@@ -83,6 +147,11 @@ const SkillAnalyticsPage = () => {
     'Data Analysis': { demand: 'high',   trend: 'rising'    },
   };
 
+useEffect(() => {
+  customRolesAPI.getAll()
+    .then(data => { if (data.success) setCustomRoles(data.roles); })
+    .catch(() => {});
+}, []);
   // High-demand skills recommended per role
   const ROLE_RECOMMENDATIONS = {
     'frontend-developer':    ['TypeScript', 'Next.js', 'TailwindCSS', 'GraphQL', 'Vitest'],
@@ -126,7 +195,7 @@ const SkillAnalyticsPage = () => {
           const key = Object.keys(MARKET_DATA).find(k => k.toLowerCase() === skill.toLowerCase());
           return key
             ? { skill, ...MARKET_DATA[key] }
-            : { skill, demand: 'medium', trend: 'stable' }; // reasonable default for unknown skills
+            : { skill, demand: 'medium', trend: 'stable' }; // reasonable default for unknown/custom skills
         });
 
         // Overall fit: weighted score (high=100, medium=60, low=25) averaged
@@ -210,12 +279,16 @@ const SkillAnalyticsPage = () => {
                 <p className="empty-skills-msg">No skills added yet. Add skills from the resume builder or search above.</p>
               ) : (
                 <div className="user-skills-wrap">
-                  {userSkills.map(skill => (
-                    <span key={skill} className="user-skill-chip">
-                      {skill}
-                      <button className="skill-remove-x" onClick={() => removeSkill(skill)}><X size={11} /></button>
-                    </span>
-                  ))}
+                  {userSkills.map(skill => {
+                    const isCustom = !predefinedSkillsLower.includes(skill.toLowerCase());
+                    return (
+                      <span key={skill} className={`user-skill-chip ${isCustom ? 'user-skill-chip--custom' : ''}`}>
+                        {isCustom && <span className="custom-skill-badge">custom</span>}
+                        {skill}
+                        <button className="skill-remove-x" onClick={() => removeSkill(skill)}><X size={11} /></button>
+                      </span>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -223,7 +296,7 @@ const SkillAnalyticsPage = () => {
             {/* Role selector */}
             <div className="card">
               <h3 className="card-section-title"><Target size={17} /> Target Role</h3>
-              <div className="analytics-roles">
+                            <div className="analytics-roles">
                 {TARGET_ROLES.filter(r => r.id !== 'other').map(role => (
                   <button key={role.id}
                     className={`analytics-role-btn ${localRole === role.id ? 'active' : ''}`}
@@ -232,7 +305,61 @@ const SkillAnalyticsPage = () => {
                     {role.label}
                   </button>
                 ))}
+
+                {/* Custom roles */}
+                {customRoles.map(role => (
+                  <button key={role._id}
+                    className={`analytics-role-btn analytics-role-custom ${localRole === role._id ? 'active' : ''}`}
+                    onClick={() => { setLocalRole(role._id); setTargetRole(role._id); setMarketResult(null); }}>
+                    {localRole === role._id && <Check size={12} />}
+                    {role.label}
+                    <span className="analytics-role-delete" onClick={(e) => handleDeleteCustomRole(role._id, e)}>
+                      <X size={11} />
+                    </span>
+                  </button>
+                ))}
+
+                {/* Add custom role button */}
+                <button className="analytics-role-btn analytics-role-add" onClick={() => setShowCustomInput(true)}>
+                  <Plus size={12} /> Add Custom Role
+                </button>
               </div>
+
+              {/* Custom role input form */}
+              {showCustomInput && (
+                <div className="ats-custom-role-input" style={{ marginTop: 12 }}>
+                  <label className="form-label">Role Name</label>
+                  <input
+                    type="text" className="form-input"
+                    placeholder="e.g. React Native Developer"
+                    value={customRoleLabel}
+                    onChange={e => setCustomRoleLabel(e.target.value)}
+                    autoFocus
+                    style={{ marginBottom: 10 }}
+                  />
+                  <label className="form-label">
+                    Job Description <span style={{ color: 'var(--error, #ef4444)' }}>*</span>
+                  </label>
+                  <textarea
+                    className="form-input" rows={4}
+                    placeholder="Paste job description to enable accurate skill gap analysis..."
+                    value={customRoleJD}
+                    onChange={e => setCustomRoleJD(e.target.value)}
+                    style={{ marginBottom: 10 }}
+                  />
+                  <div className="ats-custom-role-row">
+                    <button className="btn-primary ats-save-role-btn"
+                      onClick={handleSaveCustomRole}
+                      disabled={!customRoleLabel.trim() || !customRoleJD.trim() || savingRole}>
+                      {savingRole ? 'Saving...' : 'Save Role'}
+                    </button>
+                    <button className="ats-cancel-role-btn"
+                      onClick={() => { setShowCustomInput(false); setCustomRoleLabel(''); setCustomRoleJD(''); }}>
+                      <X size={14} /> Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* AI Market Analysis button */}
@@ -326,9 +453,11 @@ const SkillAnalyticsPage = () => {
                   </div>
                 )}
 
+                {/* ── Browse Skills by Category (with custom skill input) ── */}
                 <div className="card animate-fadeIn" style={{ animationDelay: '0.2s' }}>
                   <h3 className="card-section-title"><BarChart3 size={17} /> Browse Skills by Category</h3>
                   <p className="rec-subtitle">Click any skill to add it to your resume.</p>
+
                   {skillCategories.map(cat => (
                     <div key={cat.label} className="skill-category">
                       <p className="category-label">{cat.label}</p>
@@ -345,6 +474,62 @@ const SkillAnalyticsPage = () => {
                       </div>
                     </div>
                   ))}
+
+                  {/* ── Custom Skill Input ─────────────────────────────── */}
+                  <div className="custom-skill-section">
+                    <p className="category-label" style={{ marginBottom: 10 }}>
+                      Custom Skill
+                    </p>
+                    <p className="custom-skill-hint-text">
+                      Don't see your skill above? Add any custom skill and it will be included in your analytics.
+                    </p>
+                    <div className="custom-skill-input-row">
+                      <input
+                        ref={customSkillRef}
+                        type="text"
+                        className="form-input custom-skill-input"
+                        placeholder="e.g. Prompt Engineering, Solidity, Blender…"
+                        value={customSkillInput}
+                        onChange={e => {
+                          setCustomSkillInput(e.target.value);
+                          if (customSkillError) setCustomSkillError('');
+                        }}
+                        onKeyDown={e => e.key === 'Enter' && handleAddCustomSkill()}
+                        maxLength={40}
+                      />
+                      <button
+                        className="btn-primary custom-skill-add-btn"
+                        onClick={handleAddCustomSkill}
+                        disabled={!customSkillInput.trim()}
+                      >
+                        <Plus size={14} /> Add Skill
+                      </button>
+                    </div>
+                    {customSkillError && (
+                      <p className="custom-skill-error">{customSkillError}</p>
+                    )}
+
+                    {/* Show custom skills the user has already added */}
+                    {customAddedSkills.length > 0 && (
+                      <div className="custom-added-skills-wrap">
+                        <p className="custom-added-label">Your custom skills:</p>
+                        <div className="chip-grid">
+                          {customAddedSkills.map(skill => (
+                            <span key={skill} className="analytics-chip custom-chip">
+                              ✦ {skill}
+                              <button
+                                className="skill-remove-x"
+                                style={{ color: 'inherit' }}
+                                onClick={() => removeSkill(skill)}
+                              >
+                                <X size={11} />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {!localRole && (
@@ -399,7 +584,12 @@ const SkillAnalyticsPage = () => {
                       <div className="chip-grid">
                         {(marketResult.marketDemand || []).map((item, i) => (
                           <div key={i} className="market-skill-card">
-                            <span className="market-skill-name">{item.skill}</span>
+                            <span className="market-skill-name">
+                              {item.skill}
+                              {!predefinedSkillsLower.includes(item.skill.toLowerCase()) && (
+                                <span className="market-custom-tag">custom</span>
+                              )}
+                            </span>
                             <span className="market-demand-badge" style={{ background: getDemandColor(item.demand) }}>{item.demand}</span>
                             <span className="market-trend">
                               {item.trend === 'rising' ? '↑' : item.trend === 'declining' ? '↓' : '→'} {item.trend}
