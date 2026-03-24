@@ -88,6 +88,7 @@ export const skillsAPI = {
 /* ─── Chatbot API ────────────────────────────────────────────── */
 export const chatbotAPI = {
   send: (payload) => request('POST', '/chatbot', payload),
+  enhance: (payload) => request('POST', '/chatbot/enhance', payload),
 };
 
 /* ─── AI Assistant API ───────────────────────────────────────── */

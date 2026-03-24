@@ -1,6 +1,7 @@
 // src/pages/chatbot.jsx — AI Assistant Page (session history)
 import { useState, useRef, useEffect } from "react";
 import "./chatbot.css";
+import { chatbotAPI } from "../services/api";
 
 // ── Rule-based responses ─────────────────────────────────────
 const getAIResponse = (userMsg) => {
@@ -67,7 +68,7 @@ export default function ChatbotPage({ onUseText }) {
   const [ctx,     setCtx]     = useState("Experience");
   const [tone,    setTone]    = useState("Professional");
   const [copied,  setCopied]  = useState(null);
-  const [history, setHistory] = useState([]); // session-only history
+  const [history, setHistory] = useState([]);
   const [histTab, setHistTab] = useState("chat");
   const endRef  = useRef(null);
   const textRef = useRef(null);
@@ -91,12 +92,7 @@ export default function ChatbotPage({ onUseText }) {
       return;
     }
 
-    fetch("/api/chatbot/enhance", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ text: msg, context: ctx, tone }),
-    })
-      .then(r => r.json())
+    chatbotAPI.enhance({ text: msg, context: ctx, tone })
       .then(data => {
         setTyping(false);
         if (!data.success) {
@@ -104,16 +100,15 @@ export default function ChatbotPage({ onUseText }) {
           return;
         }
         setMsgs(p => [...p, mkMsg("bot", "✨ Here's a polished version:", data.enhanced, data.metric_tip)]);
-        // ── Save to session history ──
         setHistory(h => [{
-          id:        Date.now(),
-          original:  msg,
-          enhanced:  data.enhanced,
-          tip:       data.metric_tip,
-          context:   ctx,
+          id:       Date.now(),
+          original: msg,
+          enhanced: data.enhanced,
+          tip:      data.metric_tip,
+          context:  ctx,
           tone,
-          time:      new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          date:      new Date().toLocaleDateString(),
+          time:     new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          date:     new Date().toLocaleDateString(),
         }, ...h]);
       })
       .catch(() => {
@@ -122,6 +117,7 @@ export default function ChatbotPage({ onUseText }) {
       });
   }
 
+  // ── Helper functions — all OUTSIDE send() ────────────────
   function quickAction(id) {
     setTyping(true);
     setTimeout(() => { setTyping(false); setMsgs(p => [...p, mkMsg("bot", QUICK_RESPONSES[id])]); }, 550);
@@ -339,5 +335,5 @@ export default function ChatbotPage({ onUseText }) {
         </div>
       </div>
     </div>
-  );
-}
+  ); 
+} 

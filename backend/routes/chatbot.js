@@ -10,7 +10,7 @@ const {
 } = require("../controllers/chatbotController");
 
 // Enhance — optionally protected (saves history if logged in)
-router.post("/enhance", protect, enhance);
+router.post("/enhance",  enhance);
 
 // History routes — all protected
 router.get("/history",        protect, getHistory);
