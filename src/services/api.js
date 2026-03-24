@@ -1,5 +1,5 @@
 // src/services/api.js
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000/api';
 
 /* ─── Helper ─────────────────────────────────────────────────── */
 const getToken = () => localStorage.getItem('skillfolio_token');
@@ -60,6 +60,7 @@ export const atsAPI = {
   score: ({ resumeText, targetRoles = [] }) =>
     request('POST', '/ats/score', { resumeText, targetRoles }),
 };
+
 /* ─── Custom Roles API ───────────────────────────────────────── */
 export const customRolesAPI = {
   getAll: ()          => request('GET',    '/ats/custom-roles'),
