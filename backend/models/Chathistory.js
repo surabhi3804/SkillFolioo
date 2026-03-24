@@ -13,6 +13,8 @@ const ChatHistorySchema = new mongoose.Schema({
   tone:      { type: String, default: 'Professional' },
   domain:    { type: String, default: 'general' },
   metric_tip:{ type: String, default: '' },
+  message: String,
+  response: String,
 }, { timestamps: true });
 
 module.exports = mongoose.model('ChatHistory', ChatHistorySchema);
