@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+//skillanakyticspage.jsx
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { TARGET_ROLES, ROLE_SKILLS, ALL_SKILLS } from '../data/staticData';
 import { customRolesAPI } from '../services/api';
@@ -9,6 +10,11 @@ const SkillAnalyticsPage = () => {
   const { resumeData, setResumeData, targetRole, setTargetRole } = useApp();
   const [localRole, setLocalRole] = useState(targetRole);
   const [query, setQuery]         = useState('');
+
+  // ── Custom skill input state ──────────────────────────────────
+  const [customSkillInput, setCustomSkillInput] = useState('');
+  const [customSkillError, setCustomSkillError] = useState('');
+  const customSkillRef = useRef(null);
 
   // AI market comparison state
   const [aiTab, setAiTab]               = useState('gap');    // 'gap' | 'market'
@@ -23,6 +29,11 @@ const SkillAnalyticsPage = () => {
 
   const userSkills      = resumeData.skills || [];
   const userSkillsLower = userSkills.map(s => s.toLowerCase());
+
+  // Track which skills were added as custom (not from predefined lists)
+  const predefinedSkillsLower = ALL_SKILLS.map(s => s.toLowerCase());
+  const customAddedSkills     = userSkills.filter(s => !predefinedSkillsLower.includes(s.toLowerCase()));
+
   const roleSkills      = localRole && localRole !== 'other' ? ROLE_SKILLS[localRole] || [] : [];
 
   const presentSkills = roleSkills.filter(s => userSkillsLower.includes(s.toLowerCase()));
@@ -36,6 +47,26 @@ const SkillAnalyticsPage = () => {
 
   const addSkill    = (skill) => { setResumeData(prev => ({ ...prev, skills: [...(prev.skills || []), skill] })); setQuery(''); };
   const removeSkill = (skill) => { setResumeData(prev => ({ ...prev, skills: (prev.skills || []).filter(s => s !== skill) })); };
+
+  // ── Add a fully custom skill ──────────────────────────────────
+  const handleAddCustomSkill = () => {
+    const trimmed = customSkillInput.trim();
+    if (!trimmed) return;
+
+    if (userSkillsLower.includes(trimmed.toLowerCase())) {
+      setCustomSkillError(`"${trimmed}" is already in your skills.`);
+      return;
+    }
+    if (trimmed.length > 40) {
+      setCustomSkillError('Skill name must be 40 characters or fewer.');
+      return;
+    }
+
+    addSkill(trimmed);
+    setCustomSkillInput('');
+    setCustomSkillError('');
+    customSkillRef.current?.focus();
+  };
   
   const handleSaveCustomRole = async () => {
   if (!customRoleLabel.trim() || !customRoleJD.trim()) return;
@@ -164,7 +195,7 @@ useEffect(() => {
           const key = Object.keys(MARKET_DATA).find(k => k.toLowerCase() === skill.toLowerCase());
           return key
             ? { skill, ...MARKET_DATA[key] }
-            : { skill, demand: 'medium', trend: 'stable' }; // reasonable default for unknown skills
+            : { skill, demand: 'medium', trend: 'stable' }; // reasonable default for unknown/custom skills
         });
 
         // Overall fit: weighted score (high=100, medium=60, low=25) averaged
@@ -248,12 +279,16 @@ useEffect(() => {
                 <p className="empty-skills-msg">No skills added yet. Add skills from the resume builder or search above.</p>
               ) : (
                 <div className="user-skills-wrap">
-                  {userSkills.map(skill => (
-                    <span key={skill} className="user-skill-chip">
-                      {skill}
-                      <button className="skill-remove-x" onClick={() => removeSkill(skill)}><X size={11} /></button>
-                    </span>
-                  ))}
+                  {userSkills.map(skill => {
+                    const isCustom = !predefinedSkillsLower.includes(skill.toLowerCase());
+                    return (
+                      <span key={skill} className={`user-skill-chip ${isCustom ? 'user-skill-chip--custom' : ''}`}>
+                        {isCustom && <span className="custom-skill-badge">custom</span>}
+                        {skill}
+                        <button className="skill-remove-x" onClick={() => removeSkill(skill)}><X size={11} /></button>
+                      </span>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -418,9 +453,11 @@ useEffect(() => {
                   </div>
                 )}
 
+                {/* ── Browse Skills by Category (with custom skill input) ── */}
                 <div className="card animate-fadeIn" style={{ animationDelay: '0.2s' }}>
                   <h3 className="card-section-title"><BarChart3 size={17} /> Browse Skills by Category</h3>
                   <p className="rec-subtitle">Click any skill to add it to your resume.</p>
+
                   {skillCategories.map(cat => (
                     <div key={cat.label} className="skill-category">
                       <p className="category-label">{cat.label}</p>
@@ -437,6 +474,62 @@ useEffect(() => {
                       </div>
                     </div>
                   ))}
+
+                  {/* ── Custom Skill Input ─────────────────────────────── */}
+                  <div className="custom-skill-section">
+                    <p className="category-label" style={{ marginBottom: 10 }}>
+                      Custom Skill
+                    </p>
+                    <p className="custom-skill-hint-text">
+                      Don't see your skill above? Add any custom skill and it will be included in your analytics.
+                    </p>
+                    <div className="custom-skill-input-row">
+                      <input
+                        ref={customSkillRef}
+                        type="text"
+                        className="form-input custom-skill-input"
+                        placeholder="e.g. Prompt Engineering, Solidity, Blender…"
+                        value={customSkillInput}
+                        onChange={e => {
+                          setCustomSkillInput(e.target.value);
+                          if (customSkillError) setCustomSkillError('');
+                        }}
+                        onKeyDown={e => e.key === 'Enter' && handleAddCustomSkill()}
+                        maxLength={40}
+                      />
+                      <button
+                        className="btn-primary custom-skill-add-btn"
+                        onClick={handleAddCustomSkill}
+                        disabled={!customSkillInput.trim()}
+                      >
+                        <Plus size={14} /> Add Skill
+                      </button>
+                    </div>
+                    {customSkillError && (
+                      <p className="custom-skill-error">{customSkillError}</p>
+                    )}
+
+                    {/* Show custom skills the user has already added */}
+                    {customAddedSkills.length > 0 && (
+                      <div className="custom-added-skills-wrap">
+                        <p className="custom-added-label">Your custom skills:</p>
+                        <div className="chip-grid">
+                          {customAddedSkills.map(skill => (
+                            <span key={skill} className="analytics-chip custom-chip">
+                              ✦ {skill}
+                              <button
+                                className="skill-remove-x"
+                                style={{ color: 'inherit' }}
+                                onClick={() => removeSkill(skill)}
+                              >
+                                <X size={11} />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {!localRole && (
@@ -491,7 +584,12 @@ useEffect(() => {
                       <div className="chip-grid">
                         {(marketResult.marketDemand || []).map((item, i) => (
                           <div key={i} className="market-skill-card">
-                            <span className="market-skill-name">{item.skill}</span>
+                            <span className="market-skill-name">
+                              {item.skill}
+                              {!predefinedSkillsLower.includes(item.skill.toLowerCase()) && (
+                                <span className="market-custom-tag">custom</span>
+                              )}
+                            </span>
                             <span className="market-demand-badge" style={{ background: getDemandColor(item.demand) }}>{item.demand}</span>
                             <span className="market-trend">
                               {item.trend === 'rising' ? '↑' : item.trend === 'declining' ? '↓' : '→'} {item.trend}

@@ -1,4 +1,4 @@
-// ===== RESUME TEMPLATE DEFINITIONS =====
+// ===== RESUME TEMPLATE DEFINITIONS (staticData.js)=====
 export const TEMPLATES = [
   {
     id: 'classic-clean',
