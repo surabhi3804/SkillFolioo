@@ -17,7 +17,11 @@ const GENERAL_KEYWORDS = [
 ];
 
 const TECH_KEYWORDS = [
+<<<<<<< HEAD
   'javascript','typescript','python','java','c++','c#','rust','ruby',
+=======
+  'javascript','typescript','python','java','c++','c#','go','rust','ruby',
+>>>>>>> 212b6900966021a43561d9bc97d3f9a60d45d1a4
   'react','angular','vue','node','express','django','flask','spring','laravel',
   'html','css','sql','nosql','mongodb','postgresql','mysql','redis',
   'aws','azure','gcp','docker','kubernetes','ci/cd','git','linux',
@@ -50,6 +54,7 @@ const ROLE_KEYWORDS = {
 const normalise  = (text) => text.toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
 const countWords = (text) => text.trim().split(/\s+/).filter(Boolean).length;
 
+<<<<<<< HEAD
 /**
  * Escape special regex characters in a keyword string.
  */
@@ -67,12 +72,20 @@ const findKeywords = (resumeText, keywordList) => {
     const regex = new RegExp(`\\b${escaped}\\b`);
     return regex.test(norm);
   });
+=======
+const findKeywords = (resumeText, keywordList) => {
+  const norm = normalise(resumeText);
+  return keywordList.filter(kw => norm.includes(kw.toLowerCase()));
+>>>>>>> 212b6900966021a43561d9bc97d3f9a60d45d1a4
 };
 
 /**
  * Build a deduplicated keyword pool from all selected target roles.
  * Falls back to general + tech banks if no roles provided.
+<<<<<<< HEAD
  * NOTE: 'go' removed from TECH_KEYWORDS to avoid false matches.
+=======
+>>>>>>> 212b6900966021a43561d9bc97d3f9a60d45d1a4
  */
 const getRoleKeywords = (targetRoles = []) => {
   if (!targetRoles.length) return [...GENERAL_KEYWORDS, ...TECH_KEYWORDS];
@@ -80,6 +93,7 @@ const getRoleKeywords = (targetRoles = []) => {
   return [...new Set([...GENERAL_KEYWORDS, ...roleKws])];
 };
 
+<<<<<<< HEAD
 /**
  * FIX: Added section label variants so "Technical Skills", "Work Experience",
  * "Objective" etc. are all recognised correctly.
@@ -105,6 +119,13 @@ const checkSections = (resumeText) => {
     .map(([key]) => key);
 
   return { found, score: Math.round((found.length / Object.keys(sectionVariants).length) * 100) };
+=======
+const checkSections = (resumeText) => {
+  const norm     = normalise(resumeText);
+  const sections = ['experience','education','skills','summary','projects'];
+  const found    = sections.filter(s => norm.includes(s));
+  return { found, score: Math.round((found.length / sections.length) * 100) };
+>>>>>>> 212b6900966021a43561d9bc97d3f9a60d45d1a4
 };
 
 const checkFormatting = (resumeText) => {
@@ -167,11 +188,16 @@ exports.scoreATS = async (req, res) => {
   try {
     let resumeText = req.body.resumeText || '';
 
+<<<<<<< HEAD
     // Case 1: file uploaded via FormData
+=======
+    // Support file upload fallback
+>>>>>>> 212b6900966021a43561d9bc97d3f9a60d45d1a4
     if (!resumeText && req.file) {
       resumeText = await extractText(req.file.buffer, req.file.mimetype, req.file.originalname);
     }
 
+<<<<<<< HEAD
     // Case 2: frontend sent raw PDF bytes as resumeText — detect and re-parse
     if (resumeText && resumeText.trimStart().startsWith('%PDF')) {
       console.log('⚠️  Raw PDF detected in resumeText — re-parsing with pdf-parse...');
@@ -199,6 +225,8 @@ exports.scoreATS = async (req, res) => {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     // ─────────────────────────────────────────────────────────
 
+=======
+>>>>>>> 212b6900966021a43561d9bc97d3f9a60d45d1a4
     if (!resumeText || resumeText.trim().length < 50) {
       return res.status(400).json({ message: 'Resume text is too short or empty.' });
     }
@@ -211,6 +239,7 @@ exports.scoreATS = async (req, res) => {
 
     const wordCount    = countWords(resumeText);
     const roleKeywords = getRoleKeywords(targetRoles);
+<<<<<<< HEAD
 
     // FIX: findKeywords now uses whole-word regex matching
     const allMatched   = findKeywords(resumeText, roleKeywords);
@@ -218,6 +247,10 @@ exports.scoreATS = async (req, res) => {
     console.log('🔑 Role keywords count :', roleKeywords.length);
     console.log('✅ Matched keywords    :', allMatched);
 
+=======
+    const allMatched   = findKeywords(resumeText, roleKeywords);
+
+>>>>>>> 212b6900966021a43561d9bc97d3f9a60d45d1a4
     const keywordScore = Math.min(
       Math.round((allMatched.length / Math.min(roleKeywords.length, 30)) * 100),
       100
@@ -228,6 +261,7 @@ exports.scoreATS = async (req, res) => {
       .filter(kw => !allMatched.includes(kw))
       .slice(0, 15);
 
+<<<<<<< HEAD
     const { score: sectionScore, found: foundSections } = checkSections(resumeText);
     const formattingScore         = checkFormatting(resumeText);
     const readabilityScore        = checkReadability(resumeText);
@@ -244,6 +278,16 @@ exports.scoreATS = async (req, res) => {
       return new RegExp(`\\b${escaped}\\b`).test(norm);
     });
     const roleBoost = roleSpecificKws.length
+=======
+    const { score: sectionScore } = checkSections(resumeText);
+    const formattingScore         = checkFormatting(resumeText);
+    const readabilityScore        = checkReadability(resumeText);
+
+    // Bonus points for matching role-specific keywords
+    const roleSpecificKws  = targetRoles.flatMap(r => ROLE_KEYWORDS[r] || []);
+    const roleSpecificHits = roleSpecificKws.filter(kw => normalise(resumeText).includes(kw));
+    const roleBoost        = roleSpecificKws.length
+>>>>>>> 212b6900966021a43561d9bc97d3f9a60d45d1a4
       ? Math.round((roleSpecificHits.length / roleSpecificKws.length) * 15)
       : 0;
 
@@ -334,7 +378,11 @@ exports.getCustomRoles = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+<<<<<<< HEAD
 
+=======
+ 
+>>>>>>> 212b6900966021a43561d9bc97d3f9a60d45d1a4
 exports.saveCustomRole = async (req, res) => {
   try {
     const { label, jd } = req.body;
@@ -351,7 +399,11 @@ exports.saveCustomRole = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+<<<<<<< HEAD
 
+=======
+ 
+>>>>>>> 212b6900966021a43561d9bc97d3f9a60d45d1a4
 exports.deleteCustomRole = async (req, res) => {
   try {
     const role = await CustomRole.findOne({ _id: req.params.id, user: req.user._id });
