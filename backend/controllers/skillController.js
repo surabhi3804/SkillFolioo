@@ -1,5 +1,6 @@
 // backend/controllers/skillController.js
 const ResumeAnalysis = require('../models/ResumeAnalysis');
+const { extractText } = require('../utils/resumeParse');
 
 /* ══════════════════════════════════════════════════════════════
    SKILL TAXONOMY
@@ -12,7 +13,7 @@ const SKILL_TAXONOMY = {
   ],
   'Backend': [
     'node.js','express','django','flask','fastapi','spring','laravel','rails',
-    'python','java','c#','go','rust','php','ruby','kotlin','scala',
+    'python','java','c#','rust','php','ruby','kotlin','scala',
     'rest api','grpc','websocket','oauth','jwt',
   ],
   'Database': [
@@ -26,7 +27,7 @@ const SKILL_TAXONOMY = {
   'Data & AI': [
     'machine learning','deep learning','tensorflow','pytorch','scikit-learn',
     'pandas','numpy','matplotlib','data analysis','nlp','computer vision',
-    'power bi','tableau','excel','r','statistics','hadoop','spark',
+    'power bi','tableau','excel','statistics','hadoop','spark',
   ],
   'Mobile': [
     'react native','flutter','swift','kotlin','android','ios','xamarin','ionic',
@@ -59,7 +60,7 @@ const ROLE_SUGGESTED_SKILLS = {
 
 const TRENDING_SKILLS = [
   'typescript','next.js','tailwind','fastapi','kubernetes','terraform',
-  'aws','github actions','prisma','redis','graphql','rust','go',
+  'aws','github actions','prisma','redis','graphql','rust',
   'machine learning','pytorch','react native','flutter',
 ];
 
@@ -100,46 +101,29 @@ const detectSkills = (resumeText) => {
   return { detected: [...new Set(found)], byDomain };
 };
 
-/**
- * Build a suggested skills list from:
- *   1. Role-specific recommendations for each selected target role
- *   2. Complement map for detected skills
- * Excludes skills already detected in the resume.
- */
 const getSuggestions = (detectedSkills, targetRoles = []) => {
-  const detected = detectedSkills.map(s => s.toLowerCase());
+  const detected  = detectedSkills.map(s => s.toLowerCase());
   const suggested = new Set();
 
-  // Role-specific suggestions first
   for (const role of targetRoles) {
-    const roleSuggested = ROLE_SUGGESTED_SKILLS[role] || [];
-    roleSuggested.forEach(s => {
+    (ROLE_SUGGESTED_SKILLS[role] || []).forEach(s => {
       if (!detected.includes(s.toLowerCase())) suggested.add(s);
     });
   }
-
-  // Complement-map suggestions
   for (const sk of detectedSkills) {
-    const complements = SUGGESTIONS_MAP[sk.toLowerCase()] || [];
-    complements.forEach(c => {
+    (SUGGESTIONS_MAP[sk.toLowerCase()] || []).forEach(c => {
       if (!detected.includes(c.toLowerCase())) suggested.add(c);
     });
   }
-
   return [...suggested].slice(0, 12);
 };
 
 const getGrowthAreas = (detectedSkills, targetRoles = []) => {
-  const detected = detectedSkills.map(s => s.toLowerCase());
-
-  // Priority: skills missing from the chosen roles
+  const detected   = detectedSkills.map(s => s.toLowerCase());
   const roleGrowth = targetRoles
     .flatMap(role => ROLE_SUGGESTED_SKILLS[role] || [])
     .filter(s => !detected.includes(s.toLowerCase()));
-
-  // Fill up with trending skills
-  const trending = TRENDING_SKILLS.filter(ts => !detected.includes(ts.toLowerCase()));
-
+  const trending   = TRENDING_SKILLS.filter(ts => !detected.includes(ts.toLowerCase()));
   return [...new Set([...roleGrowth, ...trending])].slice(0, 10);
 };
 
@@ -150,12 +134,10 @@ const generateInsights = ({ detected, byDomain, suggested, growthAreas, targetRo
 
   if (rolesLabel)
     insights.push(`Analysed against target role(s): ${rolesLabel}.`);
-
   if (domainCount >= 3)
     insights.push(`You have a diverse skill set spanning ${domainCount} domains — great for full-stack or cross-functional roles.`);
   else if (domainCount === 1)
     insights.push(`Your skills are focused in ${Object.keys(byDomain)[0]}. Consider broadening into adjacent areas.`);
-
   if (byDomain['Frontend'] && byDomain['Backend'])
     insights.push('You have both frontend and backend skills — highlight this to stand out for full-stack roles.');
   if (byDomain['DevOps & Cloud'])
@@ -174,11 +156,18 @@ const generateInsights = ({ detected, byDomain, suggested, growthAreas, targetRo
 
 /* ══════════════════════════════════════════════════════════════
    POST /api/skills/analyze
-   Body: { resumeText, targetRoles: string[] }
+   Accepts FormData (file upload) OR JSON { resumeText, targetRoles }
 ══════════════════════════════════════════════════════════════ */
 exports.analyzeSkills = async (req, res) => {
   try {
-    const resumeText = req.body.resumeText || '';
+    // ✅ FIX: Support both file upload (FormData) and plain text (JSON)
+    let resumeText = req.body.resumeText || '';
+
+    if (!resumeText && req.file) {
+      resumeText = await extractText(req.file.buffer, req.file.mimetype, req.file.originalname);
+    }
+
+    console.log('📄 skillController — text length:', resumeText?.length);
 
     if (!resumeText || resumeText.trim().length < 50) {
       return res.status(400).json({ message: 'Resume text is too short or empty.' });
@@ -195,10 +184,17 @@ exports.analyzeSkills = async (req, res) => {
     const insights               = generateInsights({ detected, byDomain, suggested, growthAreas, targetRoles });
     const strongSkills           = detected.filter(s => TRENDING_SKILLS.includes(s.toLowerCase()));
 
+<<<<<<< HEAD
     // ── Persist to DB ─────────────────────────────────────────
     const userId = req.user?.id || req.user?._id;
     console.log('👤 skillController — userId:', userId);
 
+=======
+    console.log('✅ skillController — detected:', detected);
+
+    // ── Persist to DB ─────────────────────────────────────────
+    const userId = req.user?.id || req.user?._id;
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
     if (userId) {
       try {
         const saved = await ResumeAnalysis.findOneAndUpdate(
@@ -218,12 +214,18 @@ exports.analyzeSkills = async (req, res) => {
       } catch (saveErr) {
         console.error('❌ Skills DB save error:', saveErr.message);
       }
+<<<<<<< HEAD
     } else {
       console.warn('⚠️  No userId — skipping DB save. req.user:', req.user);
     }
 
     return res.json({
       // Primary response shape (matches frontend field names)
+=======
+    }
+
+    return res.json({
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
       detectedSkills:  detected,
       strongSkills,
       suggestedSkills: suggested,
@@ -231,12 +233,21 @@ exports.analyzeSkills = async (req, res) => {
       insights,
       byDomain,
       targetRoles,
+<<<<<<< HEAD
       // Legacy aliases kept for backwards compat
       skills:   detected,
       matched:  strongSkills,
       suggested,
       missing:  growthAreas,
       tips:     insights,
+=======
+      // Legacy aliases
+      skills:    detected,
+      matched:   strongSkills,
+      suggested,
+      missing:   growthAreas,
+      tips:      insights,
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
     });
   } catch (err) {
     console.error('analyzeSkills error:', err);
@@ -245,7 +256,11 @@ exports.analyzeSkills = async (req, res) => {
 };
 
 /* ══════════════════════════════════════════════════════════════
+<<<<<<< HEAD
    GET /api/skills/roles  — return default target roles list
+=======
+   GET /api/skills/roles
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
 ══════════════════════════════════════════════════════════════ */
 exports.getTargetRoles = (_req, res) => {
   const roles = Object.keys(ROLE_SUGGESTED_SKILLS);

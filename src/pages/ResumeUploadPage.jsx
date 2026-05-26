@@ -89,7 +89,6 @@ const ScoreBar = ({ label, score, color }) => (
 
 /* ══════════════════════════════════════════════════════════════
    TARGET ROLE SELECTOR
-   Reads/writes selectedRoles from AppContext via props
 ══════════════════════════════════════════════════════════════ */
 const TargetRoleSelector = ({ selectedRoles, onChange }) => {
   const [customInput, setCustomInput] = useState('');
@@ -244,6 +243,7 @@ const ResumeUploadPage = () => {
     e.preventDefault(); setDragging(false); acceptFile(e.dataTransfer.files[0]);
   }, []);
 
+<<<<<<< HEAD
   const readFileText = (f) => new Promise((res, rej) => {
     const reader = new FileReader();
     reader.onload  = (e) => res(e.target.result);
@@ -251,16 +251,26 @@ const ResumeUploadPage = () => {
     reader.readAsText(f);
   });
 
+=======
+  // ✅ FIX: Pass the File object directly — do NOT read as text.
+  // api.js handles FormData upload automatically when `file` is provided.
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
   const handleAnalyse = async () => {
     if (!file) { setError('Please upload your resume first.'); return; }
     setAnalyzing(true); setError('');
     try {
+<<<<<<< HEAD
       const resumeText = await readFileText(file);
 
       const [atsRes, skillRes] = await Promise.allSettled([
         // Both calls now send targetRoles from global context
         atsAPI.score({ resumeText, targetRoles }),
         skillsAPI.analyze({ resumeText, targetRoles }),
+=======
+      const [atsRes, skillRes] = await Promise.allSettled([
+        atsAPI.score({ file, targetRoles }),       // ✅ sends as FormData
+        skillsAPI.analyze({ file, targetRoles }),  // ✅ sends as FormData
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
       ]);
 
       if (atsRes.status   === 'fulfilled') setAtsResult(atsRes.value);
@@ -330,7 +340,11 @@ const ResumeUploadPage = () => {
             )}
           </div>
 
+<<<<<<< HEAD
           {/* ── Target Role Selector (reads/writes global context) ── */}
+=======
+          {/* ── Target Role Selector ── */}
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
           <TargetRoleSelector
             selectedRoles={targetRoles}
             onChange={setTargetRoles}
@@ -418,10 +432,17 @@ const ResumeUploadPage = () => {
               <div className="rup-tab-content">
                 <div className="rup-skill-stats">
                   {[
+<<<<<<< HEAD
                     { icon: <Star size={18}/>,        label: 'Skills Found',  value: (skillResult.detectedSkills || skillResult.skills || []).length,   color: '#7C3AED' },
                     { icon: <CheckCircle2 size={18}/>, label: 'Strong Match',  value: (skillResult.strongSkills   || skillResult.matched || []).length,   color: '#059669' },
                     { icon: <Lightbulb size={18}/>,   label: 'Suggested',     value: (skillResult.suggestedSkills|| skillResult.suggested || []).length, color: '#D97706' },
                     { icon: <TrendingUp size={18}/>,  label: 'Growth Areas',  value: (skillResult.growthAreas    || skillResult.missing || []).length,   color: '#DC2626' },
+=======
+                    { icon: <Star size={18}/>,        label: 'Skills Found',  value: (skillResult.detectedSkills || skillResult.skills || []).length,    color: '#7C3AED' },
+                    { icon: <CheckCircle2 size={18}/>, label: 'Strong Match',  value: (skillResult.strongSkills   || skillResult.matched || []).length,    color: '#059669' },
+                    { icon: <Lightbulb size={18}/>,   label: 'Suggested',     value: (skillResult.suggestedSkills|| skillResult.suggested || []).length,  color: '#D97706' },
+                    { icon: <TrendingUp size={18}/>,  label: 'Growth Areas',  value: (skillResult.growthAreas    || skillResult.missing || []).length,    color: '#DC2626' },
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
                   ].map((stat, i) => (
                     <div key={i} className="rup-stat-card">
                       <div style={{ color: stat.color }}>{stat.icon}</div>

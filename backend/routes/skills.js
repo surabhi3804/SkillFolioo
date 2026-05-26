@@ -1,4 +1,5 @@
 // backend/routes/skills.js
+<<<<<<< HEAD
 const express   = require('express');
 const router    = express.Router();
 const { protect } = require('../middleware/auth');
@@ -16,5 +17,36 @@ router.get('/roles', getTargetRoles);
  * Body: { resumeText: string, targetRoles: string[] }
  */
 router.post('/analyze', protect, analyzeSkills);
+=======
+const express  = require('express');
+const router   = express.Router();
+const multer   = require('multer');
+const { protect } = require('../middleware/auth');
+const { analyzeSkills, getTargetRoles } = require('../controllers/skillController');
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits:  { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+    ];
+    if (allowed.includes(file.mimetype) || file.originalname.match(/\.(pdf|doc|docx|txt)$/i)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF, DOC, DOCX, and TXT files are allowed.'));
+    }
+  },
+});
+
+// POST /api/skills/analyze — accepts file OR JSON body
+router.post('/analyze', protect, upload.single('resume'), analyzeSkills);
+
+// GET /api/skills/roles
+router.get('/roles', protect, getTargetRoles);
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
 
 module.exports = router;

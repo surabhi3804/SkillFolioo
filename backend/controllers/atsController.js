@@ -16,15 +16,24 @@ const GENERAL_KEYWORDS = [
   'detail-oriented','proactive','adaptable',
 ];
 
+<<<<<<< HEAD
 const TECH_KEYWORDS = [
   'javascript','typescript','python','java','c++','c#','go','rust','ruby',
+=======
+// NOTE: 'go' removed — causes false matches inside 'mongodb', 'algorithm' etc.
+const TECH_KEYWORDS = [
+  'javascript','typescript','python','java','c++','c#','rust','ruby',
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
   'react','angular','vue','node','express','django','flask','spring','laravel',
   'html','css','sql','nosql','mongodb','postgresql','mysql','redis',
   'aws','azure','gcp','docker','kubernetes','ci/cd','git','linux',
   'rest','api','graphql','microservices','agile','scrum',
 ];
 
+<<<<<<< HEAD
 /* ── Role-specific keyword map ─────────────────────────────── */
+=======
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
 const ROLE_KEYWORDS = {
   'Software Engineer':          ['algorithms','data structures','system design','object-oriented','testing','debugging','code review','git','agile'],
   'Frontend Developer':         ['react','vue','angular','html','css','javascript','typescript','responsive design','webpack','accessibility','ui','ux'],
@@ -50,6 +59,7 @@ const ROLE_KEYWORDS = {
 const normalise  = (text) => text.toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
 const countWords = (text) => text.trim().split(/\s+/).filter(Boolean).length;
 
+<<<<<<< HEAD
 const findKeywords = (resumeText, keywordList) => {
   const norm = normalise(resumeText);
   return keywordList.filter(kw => norm.includes(kw.toLowerCase()));
@@ -59,17 +69,55 @@ const findKeywords = (resumeText, keywordList) => {
  * Build a deduplicated keyword pool from all selected target roles.
  * Falls back to general + tech banks if no roles provided.
  */
+=======
+// FIX 1: escape special regex chars so keywords like 'c++' don't break the regex
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// FIX 2: whole-word matching — prevents 'go' matching inside 'mongodb',
+//        'r' matching inside every word, 'c' matching inside 'react' etc.
+const findKeywords = (resumeText, keywordList) => {
+  const norm = normalise(resumeText);
+  return keywordList.filter(kw => {
+    const escaped = escapeRegex(kw.toLowerCase());
+    return new RegExp(`\\b${escaped}\\b`).test(norm);
+  });
+};
+
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
 const getRoleKeywords = (targetRoles = []) => {
   if (!targetRoles.length) return [...GENERAL_KEYWORDS, ...TECH_KEYWORDS];
   const roleKws = targetRoles.flatMap(role => ROLE_KEYWORDS[role] || []);
   return [...new Set([...GENERAL_KEYWORDS, ...roleKws])];
 };
 
+<<<<<<< HEAD
 const checkSections = (resumeText) => {
   const norm     = normalise(resumeText);
   const sections = ['experience','education','skills','summary','projects'];
   const found    = sections.filter(s => norm.includes(s));
   return { found, score: Math.round((found.length / sections.length) * 100) };
+=======
+// FIX 3: section variants — 'Technical Skills' counts as 'Skills',
+//        'Work Experience' counts as 'Experience' etc.
+const checkSections = (resumeText) => {
+  const norm = normalise(resumeText);
+
+  const sectionVariants = {
+    experience: ['experience', 'work experience', 'professional experience', 'internship', 'employment'],
+    education:  ['education', 'academic background', 'qualifications', 'academic'],
+    skills:     ['skills', 'technical skills', 'core competencies', 'technologies', 'tech stack'],
+    summary:    ['summary', 'objective', 'profile', 'about me', 'career objective', 'professional summary'],
+    projects:   ['projects', 'key projects', 'personal projects', 'academic projects'],
+  };
+
+  const found = Object.entries(sectionVariants)
+    .filter(([, variants]) =>
+      variants.some(v => new RegExp(`\\b${escapeRegex(v)}\\b`).test(norm))
+    )
+    .map(([key]) => key);
+
+  return { found, score: Math.round((found.length / Object.keys(sectionVariants).length) * 100) };
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
 };
 
 const checkFormatting = (resumeText) => {
@@ -132,16 +180,41 @@ exports.scoreATS = async (req, res) => {
   try {
     let resumeText = req.body.resumeText || '';
 
+<<<<<<< HEAD
     // Support file upload fallback
+=======
+    // Case 1: file uploaded via FormData
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
     if (!resumeText && req.file) {
       resumeText = await extractText(req.file.buffer, req.file.mimetype, req.file.originalname);
     }
 
+<<<<<<< HEAD
+=======
+    // Case 2: frontend sent raw PDF bytes as resumeText string — re-parse it
+    if (resumeText && resumeText.trimStart().startsWith('%PDF')) {
+      console.log('⚠️  Raw PDF detected in resumeText — re-parsing...');
+      try {
+        const pdfParse = require('pdf-parse');
+        const buffer   = Buffer.from(resumeText, 'binary');
+        const data     = await pdfParse(buffer);
+        resumeText     = data.text || '';
+        console.log('✅ PDF re-parsed — length:', resumeText.length);
+      } catch (err) {
+        console.error('❌ PDF re-parse failed:', err.message);
+        resumeText = '';
+      }
+    }
+
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
     if (!resumeText || resumeText.trim().length < 50) {
       return res.status(400).json({ message: 'Resume text is too short or empty.' });
     }
 
+<<<<<<< HEAD
     // targetRoles arrives as array (JSON body) or JSON string (FormData)
+=======
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
     let targetRoles = req.body.targetRoles || [];
     if (typeof targetRoles === 'string') {
       try { targetRoles = JSON.parse(targetRoles); } catch { targetRoles = []; }
@@ -161,6 +234,7 @@ exports.scoreATS = async (req, res) => {
       .filter(kw => !allMatched.includes(kw))
       .slice(0, 15);
 
+<<<<<<< HEAD
     const { score: sectionScore } = checkSections(resumeText);
     const formattingScore         = checkFormatting(resumeText);
     const readabilityScore        = checkReadability(resumeText);
@@ -169,6 +243,22 @@ exports.scoreATS = async (req, res) => {
     const roleSpecificKws  = targetRoles.flatMap(r => ROLE_KEYWORDS[r] || []);
     const roleSpecificHits = roleSpecificKws.filter(kw => normalise(resumeText).includes(kw));
     const roleBoost        = roleSpecificKws.length
+=======
+    const { score: sectionScore, found: foundSections } = checkSections(resumeText);
+    const formattingScore  = checkFormatting(resumeText);
+    const readabilityScore = checkReadability(resumeText);
+
+    console.log('📊 Sections found:', foundSections, '| Section score:', sectionScore);
+    console.log('📊 Keyword score:', keywordScore, '| Matched:', allMatched);
+
+    // FIX 4: roleBoost also uses whole-word regex
+    const roleSpecificKws  = targetRoles.flatMap(r => ROLE_KEYWORDS[r] || []);
+    const norm             = normalise(resumeText);
+    const roleSpecificHits = roleSpecificKws.filter(kw =>
+      new RegExp(`\\b${escapeRegex(kw)}\\b`).test(norm)
+    );
+    const roleBoost = roleSpecificKws.length
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
       ? Math.round((roleSpecificHits.length / roleSpecificKws.length) * 15)
       : 0;
 
@@ -204,8 +294,11 @@ exports.scoreATS = async (req, res) => {
 
     // ── Persist to DB ─────────────────────────────────────────
     const userId = req.user?.id || req.user?._id;
+<<<<<<< HEAD
     console.log('👤 atsController — userId:', userId);
 
+=======
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
     if (userId) {
       try {
         const saved = await ResumeAnalysis.findOneAndUpdate(
@@ -224,6 +317,7 @@ exports.scoreATS = async (req, res) => {
           },
           { upsert: true, new: true, setDefaultsOnInsert: true }
         );
+<<<<<<< HEAD
         console.log('✅ ResumeAnalysis (ATS) saved, id:', saved._id);
       } catch (saveErr) {
         console.error('❌ ResumeAnalysis DB save error:', saveErr.message);
@@ -243,6 +337,18 @@ exports.scoreATS = async (req, res) => {
       formattingScore,
       readabilityScore,
       sectionScore,
+=======
+        console.log('✅ ResumeAnalysis saved, id:', saved._id);
+      } catch (saveErr) {
+        console.error('❌ DB save error:', saveErr.message);
+      }
+    }
+
+    return res.json({
+      score: atsScore, summary, breakdown,
+      matchedKeywords, missingKeywords, suggestions,
+      keywordScore, formattingScore, readabilityScore, sectionScore,
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
       targetRoles,
     });
   } catch (err) {
@@ -259,6 +365,7 @@ exports.getCustomRoles = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+<<<<<<< HEAD
  
 exports.saveCustomRole = async (req, res) => {
   try {
@@ -270,13 +377,28 @@ exports.saveCustomRole = async (req, res) => {
     if (existing) {
       return res.json({ success: true, role: existing, duplicate: true });
     }
+=======
+
+exports.saveCustomRole = async (req, res) => {
+  try {
+    const { label, jd } = req.body;
+    if (!label || !label.trim())
+      return res.status(400).json({ success: false, error: 'Role label is required.' });
+    const existing = await CustomRole.findOne({ user: req.user._id, label: label.trim() });
+    if (existing)
+      return res.json({ success: true, role: existing, duplicate: true });
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
     const role = await CustomRole.create({ user: req.user._id, label: label.trim(), jd: jd || '' });
     res.json({ success: true, role });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
 exports.deleteCustomRole = async (req, res) => {
   try {
     const role = await CustomRole.findOne({ _id: req.params.id, user: req.user._id });
