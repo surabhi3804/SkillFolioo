@@ -16,7 +16,7 @@ const resumeAnalysisSchema = new mongoose.Schema(
     targetRoles: [{ type: String }],
 
     // ── ATS results ─────────────────────────────────────────
-    atsScore: { type: Number, default: 0 },
+    atsScore:    { type: Number, default: 0 },
     atsBreakdown: {
       keywordScore:     { type: Number, default: 0 },
       formattingScore:  { type: Number, default: 0 },
