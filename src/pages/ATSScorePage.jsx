@@ -15,11 +15,11 @@ const ATSScorePage = () => {
   const [apiError, setApiError]       = useState('');
 
   // ── Custom roles state ───────────────────────────────────
-  const [customRoles,    setCustomRoles]    = useState([]);
+  const [customRoles,     setCustomRoles]     = useState([]);
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customRoleLabel, setCustomRoleLabel] = useState('');
-  const [customRoleJD, setCustomRoleJD] = useState('');
-  const [savingRole,     setSavingRole]     = useState(false);
+  const [customRoleJD,    setCustomRoleJD]    = useState('');
+  const [savingRole,      setSavingRole]      = useState(false);
 
   // ── Load custom roles on mount ───────────────────────────
   useEffect(() => {
@@ -35,12 +35,12 @@ const ATSScorePage = () => {
     try {
       const data = await customRolesAPI.save(customRoleLabel.trim(), customRoleJD.trim());
       if (data.success) {
-      if (!data.duplicate) setCustomRoles(r => [data.role, ...r]);
-      setLocalRole(data.role._id);
-      setShowCustomInput(false);
-      setCustomRoleLabel('');
-      setCustomRoleJD('');   
-}
+        if (!data.duplicate) setCustomRoles(r => [data.role, ...r]);
+        setLocalRole(data.role._id);
+        setShowCustomInput(false);
+        setCustomRoleLabel('');
+        setCustomRoleJD('');
+      }
     } catch (e) {
       console.error('Failed to save role:', e);
     } finally {
@@ -60,17 +60,21 @@ const ATSScorePage = () => {
     }
   };
 
-  // ── Derive display values from API result ──────────────
-  const score        = apiResult?.overallScore ?? null;
+  // ── FIX: read correct fields from backend response ──────
+  const score        = apiResult?.score ?? null;
   const scoreColor   = score >= 75 ? 'var(--success)' : score >= 50 ? 'var(--warning)' : 'var(--error)';
   const scoreLabel   = score >= 75 ? 'Excellent Match' : score >= 50 ? 'Good Match' : 'Needs Improvement';
   const circumference = 2 * Math.PI * 54;
   const dashOffset   = score != null ? circumference - (score / 100) * circumference : circumference;
 
-  const presentSkills = apiResult?.sections?.keywords?.matched || [];
-  const missingSkills = apiResult?.sections?.keywords?.missing  || [];
-  const improvements  = apiResult?.improvements || [];
-  const strengths     = apiResult?.strengths    || [];
+  // ── FIX: map to backend response field names ─────────────
+  const presentSkills = apiResult?.matchedKeywords || [];
+  const missingSkills = apiResult?.missingKeywords  || [];
+  const improvements  = apiResult?.suggestions      || [];
+  // backend does not return strengths — derive a simple one from keyword score
+  const strengths = apiResult?.keywordScore >= 70
+    ? [`Strong keyword match — ${presentSkills.length} relevant keywords found in your resume.`]
+    : [];
 
   // ── Get display label for selected role ─────────────────
   const getSelectedRoleLabel = () => {
@@ -81,7 +85,7 @@ const ATSScorePage = () => {
     return 'Selected Role';
   };
 
-  // ── Format resumeData as plain text for the backend ───
+  // ── Format resumeData as plain text for the backend ─────
   const buildResumeText = () => {
     const r = resumeData;
     return [
@@ -98,8 +102,6 @@ const ATSScorePage = () => {
 
   const handleCalculate = async () => {
     if (!localRole) return;
-
-    // For "other" default role, require JD
     if (localRole === 'other' && !localJD.trim()) return;
 
     setTargetRole(localRole);
@@ -109,21 +111,19 @@ const ATSScorePage = () => {
     setApiResult(null);
 
     try {
-      // Check if it's a custom role
-      const customRole = customRoles.find(r => r._id === localRole);
-
-      const jd = localJD.trim()
-        ? localJD
-        : customRole
-          ? `We are looking for a ${customRole.label}. ${customRole.jd || ''}`
-          : `We are looking for a ${TARGET_ROLES.find(r => r.id === localRole)?.label}. Required skills: ${(ROLE_SKILLS[localRole] || []).join(', ')}.`;
+      // ── FIX: send targetRoles array, not jobDescription ──
+      const isCustomRole = customRoles.find(r => r._id === localRole);
+      const roleLabel    = isCustomRole
+        ? isCustomRole.label
+        : TARGET_ROLES.find(r => r.id === localRole)?.label || localRole;
 
       const data = await atsAPI.score({
-        resumeText: buildResumeText(),
-        jobDescription: jd,
+        resumeText:  buildResumeText(),
+        targetRoles: [roleLabel],
       });
 
-      setApiResult(data.analysis);
+      // ── FIX: backend returns result directly, not under data.analysis ──
+      setApiResult(data);
       setCalculated(true);
     } catch (err) {
       setApiError(err.message || 'Could not connect to backend. Make sure server is running on port 5000.');
@@ -134,7 +134,7 @@ const ATSScorePage = () => {
     }
   };
 
-  // Fallback local scorer
+  // ── Fallback local scorer (used if backend is unreachable) ──
   const localCalcScore = (rd, roleId, jd) => {
     if (!roleId) return null;
     const roleSkills = ROLE_SKILLS[roleId] || [];
@@ -149,16 +149,18 @@ const ATSScorePage = () => {
     if ((rd.education || []).length > 0) s += 15;
     if ((rd.projects || []).length >= 2) s += 10;
     if ((rd.certifications || []).length > 0) s += 5;
+    // ── FIX: fallback shape matches backend field names ───
     return {
-      overallScore: Math.round(Math.min(s, 100)),
-      sections: { keywords: { matched, missing, score: Math.round(matched.length / (roleSkills.length || 1) * 100) } },
-      improvements: [
+      score:           Math.round(Math.min(s, 100)),
+      matchedKeywords: matched,
+      missingKeywords: missing,
+      suggestions: [
         rd.summary?.length < 50 && 'Add a detailed professional summary',
         (rd.workExperience || []).length === 0 && 'Add at least one work experience entry',
         (rd.projects || []).length === 0 && 'Add relevant projects',
         (rd.skills || []).length < 8 && 'Add more relevant technical skills',
       ].filter(Boolean),
-      strengths: matched.length > 0 ? [`You have ${matched.length} matching skills`] : [],
+      keywordScore: Math.round(matched.length / (roleSkills.length || 1) * 100),
     };
   };
 
@@ -197,7 +199,7 @@ const ATSScorePage = () => {
                   <button
                     key={role._id}
                     className={`ats-role-btn ats-role-custom ${localRole === role._id ? 'active' : ''}`}
-                    onClick={() => { setLocalRole(role._id); setLocalJD(role.jd || '');  setCalculated(false); setApiResult(null); }}
+                    onClick={() => { setLocalRole(role._id); setLocalJD(role.jd || ''); setCalculated(false); setApiResult(null); }}
                   >
                     {localRole === role._id && <Check size={13} />}
                     {role.label}
@@ -221,46 +223,46 @@ const ATSScorePage = () => {
               </div>
 
               {/* Custom role input */}
-             {showCustomInput && (
-  <div className="ats-custom-role-input">
-    <label className="form-label">Custom Role Name</label>
-    <input
-      type="text"
-      className="form-input"
-      placeholder="e.g. React Native Developer"
-      value={customRoleLabel}
-      onChange={e => setCustomRoleLabel(e.target.value)}
-      autoFocus
-      style={{ marginBottom: '10px' }}
-    />
-    <label className="form-label">
-      Paste Job Description <span style={{ color: 'var(--error, #ef4444)' }}>*</span>
-    </label>
-    <textarea
-      className="form-input"
-      rows={5}
-      placeholder="Paste the job description here — this will be used to calculate your ATS score accurately..."
-      value={customRoleJD}
-      onChange={e => setCustomRoleJD(e.target.value)}
-      style={{ marginBottom: '10px' }}
-    />
-    <div className="ats-custom-role-row">
-      <button
-        className="btn-primary ats-save-role-btn"
-        onClick={handleSaveCustomRole}
-        disabled={!customRoleLabel.trim() || !customRoleJD.trim() || savingRole}
-      >
-        {savingRole ? 'Saving...' : 'Save Role'}
-      </button>
-      <button
-        className="ats-cancel-role-btn"
-        onClick={() => { setShowCustomInput(false); setCustomRoleLabel(''); setCustomRoleJD(''); }}
-      >
-        <X size={14} /> Cancel
-      </button>
-    </div>
-  </div>
-)}
+              {showCustomInput && (
+                <div className="ats-custom-role-input">
+                  <label className="form-label">Custom Role Name</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. React Native Developer"
+                    value={customRoleLabel}
+                    onChange={e => setCustomRoleLabel(e.target.value)}
+                    autoFocus
+                    style={{ marginBottom: '10px' }}
+                  />
+                  <label className="form-label">
+                    Paste Job Description <span style={{ color: 'var(--error, #ef4444)' }}>*</span>
+                  </label>
+                  <textarea
+                    className="form-input"
+                    rows={5}
+                    placeholder="Paste the job description here — this will be used to calculate your ATS score accurately..."
+                    value={customRoleJD}
+                    onChange={e => setCustomRoleJD(e.target.value)}
+                    style={{ marginBottom: '10px' }}
+                  />
+                  <div className="ats-custom-role-row">
+                    <button
+                      className="btn-primary ats-save-role-btn"
+                      onClick={handleSaveCustomRole}
+                      disabled={!customRoleLabel.trim() || !customRoleJD.trim() || savingRole}
+                    >
+                      {savingRole ? 'Saving...' : 'Save Role'}
+                    </button>
+                    <button
+                      className="ats-cancel-role-btn"
+                      onClick={() => { setShowCustomInput(false); setCustomRoleLabel(''); setCustomRoleJD(''); }}
+                    >
+                      <X size={14} /> Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {localRole === 'other' && (
                 <div className="form-group jd-group">

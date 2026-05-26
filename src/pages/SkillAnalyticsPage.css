@@ -1,126 +1,332 @@
 /*skillanalyticspage.css */
-.analytics-page { padding: 48px 0 80px; }
-.analytics-header { text-align: center; margin-bottom: 48px; }
-.analytics-title { font-size: 36px; font-weight: 700; margin-bottom: 12px; }
-.analytics-subtitle { font-size: 17px; color: var(--text-muted); max-width: 560px; margin: 0 auto; }
 
-.analytics-layout { display: grid; grid-template-columns: 300px 1fr; gap: 28px; align-items: start; }
-.analytics-sidebar { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 80px; }
+/* ─────────────────────────────────────────────
+   PAGE LAYOUT
+───────────────────────────────────────────── */
+.analytics-page { padding: 48px 0 80px; }
+
+.analytics-header { text-align: center; margin-bottom: 48px; }
+.analytics-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+.analytics-subtitle {
+  font-size: 17px;
+  color: var(--text-muted);
+  max-width: 560px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.analytics-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+.analytics-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 80px;
+}
 .analytics-main { display: flex; flex-direction: column; gap: 20px; }
 
+/* ─────────────────────────────────────────────
+   SECTION TITLE
+───────────────────────────────────────────── */
 .card-section-title {
-  font-size: 17px; font-weight: 600;
-  display: flex; align-items: center; gap: 8px;
-  margin-bottom: 16px; color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: var(--text);
+  letter-spacing: -0.1px;
 }
 
+/* ─────────────────────────────────────────────
+   SKILL SEARCH DROPDOWN
+───────────────────────────────────────────── */
 .dropdown-suggestions {
-  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: 8px; box-shadow: var(--shadow-md); z-index: 10;
-  max-height: 200px; overflow-y: auto;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
 }
 .dropdown-item {
-  display: flex; align-items: center; gap: 6px;
-  width: 100%; padding: 8px 14px; background: none; border: none;
-  font-size: 13.5px; color: var(--text); cursor: pointer;
-  transition: background 0.12s; font-family: 'Inter', sans-serif; text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px 14px;
+  background: none;
+  border: none;
+  font-size: 13.5px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.12s;
+  font-family: 'Inter', sans-serif;
+  text-align: left;
 }
 .dropdown-item:hover { background: rgba(124,58,237,0.06); color: var(--primary); }
 
+/* ─────────────────────────────────────────────
+   SKILL CHIPS — SIDEBAR
+───────────────────────────────────────────── */
 .empty-skills-msg { font-size: 14px; color: var(--text-light); line-height: 1.6; }
-.user-skills-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
-.user-skill-chip {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 5px 10px; background: rgba(124,58,237,0.08);
-  border: 1px solid rgba(124,58,237,0.2); border-radius: 20px;
-  font-size: 12.5px; font-weight: 500; color: var(--primary);
-}
-.skill-remove-x { background: none; border: none; color: var(--primary); cursor: pointer; display: flex; padding: 0; }
 
-/* ── Custom skill chip variant in sidebar ── */
+.user-skills-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
+
+.user-skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: rgba(124,58,237,0.07);
+  border: 1px solid rgba(124,58,237,0.18);
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--primary);
+  transition: border-color 0.15s, background 0.15s;
+}
+.user-skill-chip:hover { background: rgba(124,58,237,0.12); }
+
+.skill-remove-x {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  display: flex;
+  padding: 0;
+  opacity: 0.6;
+  transition: opacity 0.12s;
+}
+.skill-remove-x:hover { opacity: 1; }
+
+/* Custom chip variant */
 .user-skill-chip--custom {
-  background: rgba(6, 182, 212, 0.08);
-  border-color: rgba(6, 182, 212, 0.3);
+  background: rgba(6,182,212,0.07);
+  border-color: rgba(6,182,212,0.25);
   color: #0891b2;
 }
+.user-skill-chip--custom:hover { background: rgba(6,182,212,0.13); }
 .user-skill-chip--custom .skill-remove-x { color: #0891b2; }
 
 .custom-skill-badge {
   font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background: rgba(6, 182, 212, 0.15);
+  letter-spacing: 0.6px;
+  background: rgba(6,182,212,0.12);
   color: #0891b2;
   border-radius: 4px;
   padding: 1px 4px;
   line-height: 1.4;
 }
 
+/* ─────────────────────────────────────────────
+   ROLE BUTTONS
+───────────────────────────────────────────── */
 .analytics-roles { display: flex; flex-direction: column; gap: 5px; }
+
 .analytics-role-btn {
-  display: flex; align-items: center; gap: 7px;
-  padding: 8px 12px; border-radius: 8px;
-  border: 1px solid var(--border); background: none;
-  font-size: 13.5px; color: var(--text-muted); cursor: pointer;
-  transition: all 0.15s; text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: none;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
   font-family: 'Inter', sans-serif;
 }
-.analytics-role-btn:hover { border-color: var(--primary); color: var(--primary); background: rgba(124,58,237,0.04); }
-.analytics-role-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+.analytics-role-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(124,58,237,0.04);
+}
+.analytics-role-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
 
-/* Match overview */
+.analytics-role-custom { border-style: dashed; }
+.analytics-role-add {
+  color: var(--primary);
+  border-color: var(--primary);
+  border-style: dashed;
+}
+.analytics-role-add:hover { background: var(--primary); color: #fff; }
+
+.analytics-role-delete {
+  margin-left: auto;
+  opacity: 0.4;
+  display: inline-flex;
+  transition: opacity 0.12s, color 0.12s;
+}
+.analytics-role-delete:hover { opacity: 1; color: #ef4444; }
+
+/* ─────────────────────────────────────────────
+   MATCH OVERVIEW CARD
+───────────────────────────────────────────── */
 .match-overview { }
-.match-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.match-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
 .match-role-label { font-size: 14px; color: var(--text-muted); }
+
 .match-bar-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-.match-bar { flex: 1; height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; }
-.match-bar-fill { height: 100%; border-radius: 5px; transition: width 1s ease; }
-.match-bar-label { font-size: 14px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+.match-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.match-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.match-bar-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
 .match-stats-row { display: flex; gap: 28px; }
 .match-stat { display: flex; align-items: center; gap: 8px; }
-.match-stat-num { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); }
+.match-stat-num {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
 .match-stat-label { font-size: 13px; color: var(--text-muted); }
 
-/* Chips */
+/* ─────────────────────────────────────────────
+   SKILL CHIPS — MAIN PANEL
+───────────────────────────────────────────── */
 .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+
 .analytics-chip {
-  padding: 6px 14px; border-radius: 20px;
-  font-size: 13px; font-weight: 500;
-  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1.4;
 }
-.present-chip { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); color: #059669; }
+
+.present-chip {
+  background: rgba(16,185,129,0.08);
+  border: 1px solid rgba(16,185,129,0.22);
+  color: #059669;
+}
+
 .missing-chip-btn {
   background: rgba(245,158,11,0.06);
-  border: 1.5px dashed rgba(245,158,11,0.4);
-  color: #D97706; cursor: pointer;
+  border: 1.5px dashed rgba(245,158,11,0.38);
+  color: #D97706;
+  cursor: pointer;
   transition: all 0.15s;
   font-family: 'Inter', sans-serif;
 }
-.missing-chip-btn:hover { background: rgba(245,158,11,0.12); border-style: solid; }
-.add-skill-hint { font-size: 12.5px; color: var(--text-light); margin-top: 10px; }
+.missing-chip-btn:hover {
+  background: rgba(245,158,11,0.11);
+  border-style: solid;
+}
 
-.rec-subtitle { font-size: 14.5px; color: var(--text-muted); margin-bottom: 16px; }
+.add-skill-hint {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-top: 10px;
+  font-style: italic;
+}
 
-/* Categories */
+.rec-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  line-height: 1.55;
+}
+
+/* ─────────────────────────────────────────────
+   SKILL CATEGORIES
+───────────────────────────────────────────── */
 .skill-category { margin-bottom: 18px; }
 .skill-category:last-child { margin-bottom: 0; }
-.category-label { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+
+.category-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  margin-bottom: 8px;
+}
+
 .category-chip {
-  background: var(--bg); border: 1px solid var(--border);
-  color: var(--text); cursor: pointer; transition: all 0.15s;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
   font-family: 'Inter', sans-serif;
 }
-.category-chip:hover:not(.added) { background: rgba(124,58,237,0.06); border-color: var(--primary); color: var(--primary); }
-.category-chip.added { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.3); color: #059669; cursor: default; }
+.category-chip:hover:not(.added) {
+  background: rgba(124,58,237,0.06);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.category-chip.added {
+  background: rgba(16,185,129,0.07);
+  border-color: rgba(16,185,129,0.25);
+  color: #059669;
+  cursor: default;
+}
 
-.analytics-empty { display: flex; flex-direction: column; align-items: center; padding: 56px 32px; text-align: center; gap: 14px; }
+/* ─────────────────────────────────────────────
+   EMPTY STATE
+───────────────────────────────────────────── */
+.analytics-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px 32px;
+  text-align: center;
+  gap: 12px;
+}
 .analytics-empty .empty-icon { color: var(--border); }
-.analytics-empty h3 { font-size: 18px; font-weight: 600; }
-.analytics-empty p { font-size: 15px; color: var(--text-muted); max-width: 320px; }
+.analytics-empty h3 { font-size: 18px; font-weight: 600; color: var(--text); }
+.analytics-empty p { font-size: 15px; color: var(--text-muted); max-width: 320px; line-height: 1.55; }
 
-/* ── Tabs ── */
+/* ─────────────────────────────────────────────
+   TABS
+───────────────────────────────────────────── */
 .analytics-tabs {
   display: flex;
   gap: 8px;
@@ -130,7 +336,7 @@
   flex: 1;
   padding: 10px 16px;
   border: 1px solid var(--border);
-  background: transparent;
+  background: var(--bg-card);
   color: var(--text-muted);
   border-radius: 10px;
   font-size: 0.875rem;
@@ -139,24 +345,115 @@
   transition: all 0.2s;
   font-family: 'Inter', sans-serif;
 }
+.analytics-tab:hover:not(.active) {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(124,58,237,0.04);
+}
 .analytics-tab.active {
-  background: rgba(124, 58, 237, 0.15);
-  border-color: rgba(124, 58, 237, 0.5);
-  color: #a78bfa;
+  background: rgba(124,58,237,0.1);
+  border-color: rgba(124,58,237,0.4);
+  color: var(--primary);
+  font-weight: 600;
 }
 
-/* ── Market Demand Cards ── */
+/* ─────────────────────────────────────────────
+   CHART PANEL CARDS
+   Override any inline dark styles from JSX
+───────────────────────────────────────────── */
+
+/* The ChartPanel wraps everything in .card with inline dark bg.
+   We force those cards back to the page's design system. */
+.analytics-main .card[style*="background: #12161f"],
+.analytics-main .card[style*="background:#12161f"] {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Chart card wrapper — clean, airy professional look */
+.analytics-main .card {
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: box-shadow 0.2s;
+}
+.analytics-main .card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+/* Tip banner in charts tab */
+.analytics-main [style*="background: #6ee7f710"] {
+  background: rgba(124,58,237,0.05) !important;
+  border-color: rgba(124,58,237,0.15) !important;
+  border-radius: 10px;
+}
+.analytics-main [style*="background: #6ee7f710"] span[style*="color: #94a3b8"] {
+  color: var(--text-muted) !important;
+}
+
+/* Donut/bar chart canvas wrappers inside cards */
+.analytics-main .card canvas {
+  display: block;
+  border-radius: 6px;
+}
+
+/* Legend dots & labels next to donut */
+.analytics-main .card [style*="color: #94a3b8"] {
+  color: var(--text-muted) !important;
+}
+
+/* "Select a target role" placeholder inside Role Match card */
+.analytics-main .card [style*="color: #ffffff25"] {
+  color: var(--border) !important;
+}
+.analytics-main .card [style*="color: #ffffff35"] {
+  color: var(--text-light) !important;
+}
+
+/* Donut centre circle — override the hardcoded dark fill via a CSS filter trick.
+   Canvas colours are drawn in JS; we use a surrounding wrapper approach. */
+.chart-donut-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Glow accent line on chart cards */
+.analytics-main .card::before {
+  content: '';
+  display: block;
+  height: 3px;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(90deg, var(--primary) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  margin: -1px -1px 0;
+  position: relative;
+  z-index: 1;
+}
+.analytics-main .card:hover::before {
+  opacity: 0.35;
+}
+
+/* ─────────────────────────────────────────────
+   MARKET DEMAND CARDS
+───────────────────────────────────────────── */
 .market-skill-card {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  background: var(--bg-card);
+  padding: 9px 14px;
+  background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 9px;
   font-size: 0.825rem;
   width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
+.market-skill-card:hover {
+  border-color: rgba(124,58,237,0.2);
+  box-shadow: 0 2px 8px rgba(124,58,237,0.05);
+}
+
 .market-skill-name {
   flex: 1;
   font-weight: 500;
@@ -165,42 +462,40 @@
   align-items: center;
   gap: 6px;
 }
+
 .market-demand-badge {
-  padding: 2px 8px;
+  padding: 3px 9px;
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: #fff;
   text-transform: capitalize;
+  letter-spacing: 0.2px;
 }
+
 .market-trend {
   color: var(--text-muted);
   font-size: 0.78rem;
   text-transform: capitalize;
+  min-width: 60px;
+  text-align: right;
 }
 
-/* ── Custom tag in market demand row ── */
 .market-custom-tag {
   font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  background: rgba(6, 182, 212, 0.15);
+  background: rgba(6,182,212,0.12);
   color: #0891b2;
   border-radius: 4px;
   padding: 1px 5px;
   line-height: 1.4;
 }
 
-.analytics-role-custom { border-style: dashed; }
-.analytics-role-add { color: var(--primary); border-color: var(--primary); border-style: dashed; }
-.analytics-role-add:hover { background: var(--primary); color: #fff; }
-.analytics-role-delete { margin-left: 4px; opacity: 0.5; display: inline-flex; }
-.analytics-role-delete:hover { opacity: 1; color: #ef4444; }
-
-/* ────────────────────────────────────────────────────────────────
+/* ─────────────────────────────────────────────
    CUSTOM SKILL INPUT SECTION
-   ──────────────────────────────────────────────────────────────── */
+───────────────────────────────────────────── */
 .custom-skill-section {
   margin-top: 24px;
   padding-top: 20px;
@@ -220,10 +515,7 @@
   align-items: center;
 }
 
-.custom-skill-input {
-  flex: 1;
-  /* inherits .form-input styles from global */
-}
+.custom-skill-input { flex: 1; }
 
 .custom-skill-add-btn {
   display: inline-flex;
@@ -235,9 +527,8 @@
   flex-shrink: 0;
   border-radius: 8px;
 }
-
 .custom-skill-add-btn:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -247,30 +538,68 @@
   margin-top: 7px;
 }
 
-/* Already-added custom skills list inside the browse section */
-.custom-added-skills-wrap {
-  margin-top: 16px;
-}
-
+.custom-added-skills-wrap { margin-top: 16px; }
 .custom-added-label {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11.5px;
+  font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.7px;
   margin-bottom: 8px;
 }
 
-/* The custom chip displayed in the "Your custom skills" row */
 .custom-chip {
-  background: rgba(6, 182, 212, 0.08);
-  border: 1px solid rgba(6, 182, 212, 0.3);
+  background: rgba(6,182,212,0.07);
+  border: 1px solid rgba(6,182,212,0.25);
   color: #0891b2;
 }
 
+/* ─────────────────────────────────────────────
+   CHART LEGEND ROWS  (used in ChartPanel)
+───────────────────────────────────────────── */
+.chart-legend-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.chart-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────
+   DIVIDER LABEL (used in "total required" note)
+───────────────────────────────────────────── */
+.analytics-main [style*="color: #ffffff35"] {
+  color: var(--text-light) !important;
+  font-style: italic;
+}
+
+/* ─────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────── */
 @media (max-width: 860px) {
   .analytics-layout { grid-template-columns: 1fr; }
   .analytics-sidebar { position: static; }
   .custom-skill-input-row { flex-direction: column; align-items: stretch; }
   .custom-skill-add-btn { justify-content: center; }
+  .analytics-tabs { flex-direction: column; }
+  .match-stats-row { gap: 16px; flex-wrap: wrap; }
+}
+
+@media (max-width: 480px) {
+  .analytics-page { padding: 32px 0 60px; }
+  .analytics-title { font-size: 28px; }
+  .match-stat-num { font-size: 18px; }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Upload, FileText, Target, Zap, CheckCircle2, XCircle,
   AlertCircle, ChevronRight, BarChart2, Star, TrendingUp,
@@ -210,9 +210,6 @@ const TargetRoleSelector = ({ selectedRoles, onChange }) => {
 ══════════════════════════════════════════════════════════════ */
 const ResumeUploadPage = () => {
   const fileRef = useRef(null);
-
-  // ── Pull targetRoles from global context so selection persists
-  // across navigation and is available to other pages (e.g. chatbot)
   const { targetRoles, setTargetRoles } = useApp();
 
   const [file,      setFile]      = useState(null);
@@ -223,6 +220,9 @@ const ResumeUploadPage = () => {
 
   const [atsResult,   setAtsResult]   = useState(null);
   const [skillResult, setSkillResult] = useState(null);
+
+  // Track whether user has run at least one analysis (to know when to auto re-run)
+  const hasAnalysedOnce = useRef(false);
 
   const acceptFile = (f) => {
     if (!f) return;
@@ -236,53 +236,56 @@ const ResumeUploadPage = () => {
       setError('Please upload a PDF, DOCX, or TXT file.'); return;
     }
     if (f.size > 5 * 1024 * 1024) { setError('File must be under 5 MB.'); return; }
-    setError(''); setFile(f); setAtsResult(null); setSkillResult(null);
+    setError('');
+    setFile(f);
+    setAtsResult(null);
+    setSkillResult(null);
+    hasAnalysedOnce.current = false;
   };
 
   const onDrop = useCallback((e) => {
     e.preventDefault(); setDragging(false); acceptFile(e.dataTransfer.files[0]);
   }, []);
 
-<<<<<<< HEAD
-  const readFileText = (f) => new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onload  = (e) => res(e.target.result);
-    reader.onerror = () => rej(new Error('Could not read file'));
-    reader.readAsText(f);
-  });
+  const handleAnalyse = useCallback(async (rolesOverride) => {
+    const rolesToUse = rolesOverride ?? targetRoles;
 
-=======
-  // ✅ FIX: Pass the File object directly — do NOT read as text.
-  // api.js handles FormData upload automatically when `file` is provided.
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
-  const handleAnalyse = async () => {
     if (!file) { setError('Please upload your resume first.'); return; }
-    setAnalyzing(true); setError('');
-    try {
-<<<<<<< HEAD
-      const resumeText = await readFileText(file);
+    setAnalyzing(true);
+    setError('');
+    // ✅ FIX: Clear stale results immediately so UI reflects the new role selection
+    setAtsResult(null);
+    setSkillResult(null);
 
+    try {
       const [atsRes, skillRes] = await Promise.allSettled([
-        // Both calls now send targetRoles from global context
-        atsAPI.score({ resumeText, targetRoles }),
-        skillsAPI.analyze({ resumeText, targetRoles }),
-=======
-      const [atsRes, skillRes] = await Promise.allSettled([
-        atsAPI.score({ file, targetRoles }),       // ✅ sends as FormData
-        skillsAPI.analyze({ file, targetRoles }),  // ✅ sends as FormData
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
+        atsAPI.score({ file, targetRoles: rolesToUse }),
+        skillsAPI.analyze({ file, targetRoles: rolesToUse }),
       ]);
 
       if (atsRes.status   === 'fulfilled') setAtsResult(atsRes.value);
       if (skillRes.status === 'fulfilled') setSkillResult(skillRes.value);
       if (atsRes.status === 'rejected' && skillRes.status === 'rejected')
         throw new Error(atsRes.reason?.message || 'Analysis failed');
+
+      hasAnalysedOnce.current = true;
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setAnalyzing(false);
     }
-  };
+  }, [file, targetRoles]);
+
+  // Keep a ref to the latest handleAnalyse so the effect below never goes stale
+  const handleAnalyseRef = useRef(handleAnalyse);
+  useEffect(() => { handleAnalyseRef.current = handleAnalyse; });
+
+  // ✅ FIX: Auto re-analyse when roles change, but only after first analysis has run
+  useEffect(() => {
+    if (file && hasAnalysedOnce.current) {
+      handleAnalyseRef.current(targetRoles);
+    }
+  }, [targetRoles, file]);
 
   const hasResults = atsResult || skillResult;
 
@@ -326,7 +329,11 @@ const ResumeUploadPage = () => {
                   <p className="rup-file-size">{(file.size / 1024).toFixed(1)} KB · Ready to analyse</p>
                 </div>
                 <button className="rup-file-remove" onClick={e => {
-                  e.stopPropagation(); setFile(null); setAtsResult(null); setSkillResult(null);
+                  e.stopPropagation();
+                  setFile(null);
+                  setAtsResult(null);
+                  setSkillResult(null);
+                  hasAnalysedOnce.current = false;
                 }}>
                   <X size={15} />
                 </button>
@@ -340,11 +347,7 @@ const ResumeUploadPage = () => {
             )}
           </div>
 
-<<<<<<< HEAD
-          {/* ── Target Role Selector (reads/writes global context) ── */}
-=======
           {/* ── Target Role Selector ── */}
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
           <TargetRoleSelector
             selectedRoles={targetRoles}
             onChange={setTargetRoles}
@@ -354,7 +357,11 @@ const ResumeUploadPage = () => {
             <div className="rup-error"><AlertCircle size={14} /> {error}</div>
           )}
 
-          <button className="rup-analyse-btn" onClick={handleAnalyse} disabled={!file || analyzing}>
+          <button
+            className="rup-analyse-btn"
+            onClick={() => handleAnalyse()}
+            disabled={!file || analyzing}
+          >
             {analyzing
               ? <><span className="rup-btn-spinner" /> Analysing your resume…</>
               : <><Zap size={16} /> {hasResults ? 'Re-analyse' : 'Analyse Resume'}</>}
@@ -362,7 +369,7 @@ const ResumeUploadPage = () => {
         </div>
 
         {/* ── Results ── */}
-        {hasResults && (
+        {(hasResults || analyzing) && (
           <div className="rup-results">
             <div className="rup-tabs">
               <button className={`rup-tab ${activeTab === 'ats' ? 'active' : ''}`} onClick={() => setActiveTab('ats')}>
@@ -373,8 +380,16 @@ const ResumeUploadPage = () => {
               </button>
             </div>
 
+            {/* Loading state shown inside tabs while re-analysing */}
+            {analyzing && (
+              <div className="rup-empty">
+                <BarChart2 size={32} style={{ opacity: 0.3 }} />
+                <p>Analysing your resume for the selected role(s)…</p>
+              </div>
+            )}
+
             {/* ATS tab */}
-            {activeTab === 'ats' && atsResult && (
+            {!analyzing && activeTab === 'ats' && atsResult && (
               <div className="rup-tab-content">
                 <div className="rup-ats-hero">
                   <ScoreRing score={atsResult.score ?? atsResult.atsScore ?? 0} />
@@ -428,21 +443,14 @@ const ResumeUploadPage = () => {
             )}
 
             {/* Skills tab */}
-            {activeTab === 'skills' && skillResult && (
+            {!analyzing && activeTab === 'skills' && skillResult && (
               <div className="rup-tab-content">
                 <div className="rup-skill-stats">
                   {[
-<<<<<<< HEAD
-                    { icon: <Star size={18}/>,        label: 'Skills Found',  value: (skillResult.detectedSkills || skillResult.skills || []).length,   color: '#7C3AED' },
-                    { icon: <CheckCircle2 size={18}/>, label: 'Strong Match',  value: (skillResult.strongSkills   || skillResult.matched || []).length,   color: '#059669' },
-                    { icon: <Lightbulb size={18}/>,   label: 'Suggested',     value: (skillResult.suggestedSkills|| skillResult.suggested || []).length, color: '#D97706' },
-                    { icon: <TrendingUp size={18}/>,  label: 'Growth Areas',  value: (skillResult.growthAreas    || skillResult.missing || []).length,   color: '#DC2626' },
-=======
                     { icon: <Star size={18}/>,        label: 'Skills Found',  value: (skillResult.detectedSkills || skillResult.skills || []).length,    color: '#7C3AED' },
                     { icon: <CheckCircle2 size={18}/>, label: 'Strong Match',  value: (skillResult.strongSkills   || skillResult.matched || []).length,    color: '#059669' },
                     { icon: <Lightbulb size={18}/>,   label: 'Suggested',     value: (skillResult.suggestedSkills|| skillResult.suggested || []).length,  color: '#D97706' },
                     { icon: <TrendingUp size={18}/>,  label: 'Growth Areas',  value: (skillResult.growthAreas    || skillResult.missing || []).length,    color: '#DC2626' },
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
                   ].map((stat, i) => (
                     <div key={i} className="rup-stat-card">
                       <div style={{ color: stat.color }}>{stat.icon}</div>
@@ -496,10 +504,10 @@ const ResumeUploadPage = () => {
               </div>
             )}
 
-            {activeTab === 'ats' && !atsResult && (
+            {!analyzing && activeTab === 'ats' && !atsResult && (
               <div className="rup-empty"><AlertCircle size={20} style={{ color: '#D97706' }} /><p>ATS results unavailable. Try re-analysing with a target role selected.</p></div>
             )}
-            {activeTab === 'skills' && !skillResult && (
+            {!analyzing && activeTab === 'skills' && !skillResult && (
               <div className="rup-empty"><AlertCircle size={20} style={{ color: '#D97706' }} /><p>Skill analytics unavailable. Try re-analysing.</p></div>
             )}
           </div>

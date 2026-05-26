@@ -3,85 +3,160 @@ const ResumeAnalysis = require('../models/ResumeAnalysis');
 const { extractText } = require('../utils/resumeParse');
 
 /* ══════════════════════════════════════════════════════════════
-   SKILL TAXONOMY
+   SKILL TAXONOMY  (used for detection)
 ══════════════════════════════════════════════════════════════ */
 const SKILL_TAXONOMY = {
   'Frontend': [
-    'html','css','javascript','typescript','react','angular','vue','svelte',
-    'next.js','nuxt','tailwind','sass','scss','bootstrap','webpack','vite',
-    'redux','graphql','jest','cypress','figma',
+    'html', 'css', 'javascript', 'typescript', 'react', 'angular', 'vue', 'svelte',
+    'next.js', 'nuxt', 'tailwind', 'sass', 'scss', 'bootstrap', 'webpack', 'vite',
+    'redux', 'graphql', 'jest', 'cypress', 'figma', 'storybook', 'accessibility',
   ],
   'Backend': [
-    'node.js','express','django','flask','fastapi','spring','laravel','rails',
-    'python','java','c#','rust','php','ruby','kotlin','scala',
-    'rest api','grpc','websocket','oauth','jwt',
+    'node.js', 'express', 'django', 'flask', 'fastapi', 'spring', 'laravel', 'rails',
+    'python', 'java', 'c#', 'rust', 'php', 'ruby', 'kotlin', 'scala',
+    'rest api', 'grpc', 'websocket', 'oauth', 'jwt', 'microservices', 'caching',
   ],
   'Database': [
-    'mysql','postgresql','mongodb','redis','sqlite','firebase','supabase',
-    'dynamodb','cassandra','elasticsearch','sql','nosql','orm','prisma','mongoose',
+    'mysql', 'postgresql', 'mongodb', 'redis', 'sqlite', 'firebase', 'supabase',
+    'dynamodb', 'cassandra', 'elasticsearch', 'sql', 'nosql', 'orm', 'prisma', 'mongoose',
+    'snowflake', 'bigquery', 'redshift',
   ],
   'DevOps & Cloud': [
-    'docker','kubernetes','aws','azure','gcp','ci/cd','github actions','jenkins',
-    'terraform','ansible','nginx','linux','bash','shell scripting','helm',
+    'docker', 'kubernetes', 'aws', 'azure', 'gcp', 'ci/cd', 'github actions', 'jenkins',
+    'terraform', 'ansible', 'nginx', 'linux', 'bash', 'shell scripting', 'helm',
+    'prometheus', 'grafana', 'argocd', 'serverless',
   ],
   'Data & AI': [
-    'machine learning','deep learning','tensorflow','pytorch','scikit-learn',
-    'pandas','numpy','matplotlib','data analysis','nlp','computer vision',
-    'power bi','tableau','excel','statistics','hadoop','spark',
+    'machine learning', 'deep learning', 'tensorflow', 'pytorch', 'scikit-learn',
+    'pandas', 'numpy', 'matplotlib', 'data analysis', 'nlp', 'computer vision',
+    'power bi', 'tableau', 'statistics', 'hadoop', 'spark', 'mlops', 'transformers',
+    'hugging face', 'llm', 'feature engineering',
   ],
   'Mobile': [
-    'react native','flutter','swift','kotlin','android','ios','xamarin','ionic',
+    'react native', 'flutter', 'swift', 'kotlin', 'android', 'ios', 'xamarin', 'ionic',
+    'expo', 'dart',
   ],
   'Soft Skills': [
-    'communication','leadership','teamwork','problem solving','critical thinking',
-    'project management','agile','scrum','time management','mentoring',
+    'communication', 'leadership', 'teamwork', 'problem solving', 'critical thinking',
+    'project management', 'agile', 'scrum', 'time management', 'mentoring',
   ],
 };
 
-/* ── Skills recommended per target role ───────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   ROLE → REQUIRED SKILLS  (what the role *needs*)
+   Used to compute gap: missing = required - detected
+══════════════════════════════════════════════════════════════ */
+const ROLE_REQUIRED_SKILLS = {
+  'Software Engineer': [
+    'algorithms', 'data structures', 'system design', 'design patterns',
+    'unit testing', 'ci/cd', 'git', 'docker', 'api', 'agile',
+  ],
+  'Frontend Developer': [
+    'react', 'typescript', 'html', 'css', 'javascript', 'next.js',
+    'tailwind', 'accessibility', 'jest', 'webpack',
+  ],
+  'Backend Developer': [
+    'node.js', 'python', 'postgresql', 'redis', 'docker', 'rest api',
+    'authentication', 'microservices', 'ci/cd', 'orm',
+  ],
+  'Full Stack Developer': [
+    'react', 'node.js', 'typescript', 'postgresql', 'mongodb',
+    'docker', 'ci/cd', 'rest api', 'html', 'css',
+  ],
+  'Data Scientist': [
+    'python', 'pandas', 'numpy', 'scikit-learn', 'statistics',
+    'machine learning', 'sql', 'data analysis', 'matplotlib', 'jupyter',
+  ],
+  'AI/ML Engineer': [
+    'python', 'pytorch', 'tensorflow', 'machine learning', 'deep learning',
+    'nlp', 'mlops', 'transformers', 'model deployment', 'feature engineering',
+  ],
+  'Data Engineer': [
+    'python', 'sql', 'spark', 'airflow', 'kafka', 'etl', 'aws',
+    'data modelling', 'bigquery', 'dbt',
+  ],
+  'DevOps Engineer': [
+    'docker', 'kubernetes', 'terraform', 'ci/cd', 'aws', 'linux',
+    'bash', 'github actions', 'prometheus', 'grafana',
+  ],
+  'Cloud Engineer': [
+    'aws', 'terraform', 'kubernetes', 'serverless', 'iam',
+    'networking', 'cloud architecture', 'azure', 'gcp', 'cost optimisation',
+  ],
+  'Mobile Developer': [
+    'react native', 'flutter', 'typescript', 'firebase', 'rest api',
+    'ios', 'android', 'expo', 'push notifications', 'offline support',
+  ],
+  'Product Manager': [
+    'product roadmap', 'agile', 'user research', 'data analysis', 'sql',
+    'okrs', 'ab testing', 'stakeholders', 'jira', 'go-to-market',
+  ],
+  'UI/UX Designer': [
+    'figma', 'user research', 'wireframing', 'prototyping', 'usability testing',
+    'accessibility', 'design systems', 'interaction design', 'personas', 'journey mapping',
+  ],
+  'Cybersecurity Engineer': [
+    'penetration testing', 'vulnerability assessment', 'siem', 'owasp',
+    'incident response', 'cryptography', 'cloud security', 'devsecops',
+    'zero trust', 'compliance',
+  ],
+  'QA / Test Engineer': [
+    'cypress', 'playwright', 'selenium', 'jest', 'api testing',
+    'test strategy', 'ci/cd', 'regression', 'performance testing', 'automation',
+  ],
+  'Embedded Systems Engineer': [
+    'c', 'c++', 'rtos', 'firmware', 'microcontrollers', 'uart', 'spi',
+    'cmake', 'debugging', 'embedded linux',
+  ],
+  'Blockchain Developer': [
+    'solidity', 'ethereum', 'smart contracts', 'web3', 'defi',
+    'hardhat', 'cryptography', 'security auditing', 'layer 2', 'ipfs',
+  ],
+};
+
+/* ══════════════════════════════════════════════════════════════
+   ROLE → NICE-TO-HAVE / SUGGESTED SKILLS
+   (not required but boosts profile significantly)
+══════════════════════════════════════════════════════════════ */
 const ROLE_SUGGESTED_SKILLS = {
-  'Software Engineer':         ['system design','algorithms','design patterns','testing','ci/cd','docker'],
-  'Frontend Developer':        ['typescript','next.js','tailwind','accessibility','testing','storybook'],
-  'Backend Developer':         ['docker','redis','message queues','api design','database optimisation','microservices'],
-  'Full Stack Developer':      ['typescript','docker','ci/cd','testing','api design','state management'],
-  'Data Scientist':            ['pytorch','mlflow','statistics','feature engineering','sql','data visualisation'],
-  'AI/ML Engineer':            ['mlops','transformers','model deployment','python','pytorch','hugging face'],
-  'Data Engineer':             ['airflow','dbt','kafka','spark','data modelling','bigquery','snowflake'],
-  'DevOps Engineer':           ['terraform','prometheus','grafana','helm','argocd','chaos engineering'],
-  'Cloud Engineer':            ['terraform','serverless','cloud security','cost optimisation','multi-cloud','kubernetes'],
-  'Mobile Developer':          ['typescript','firebase','offline support','app performance','push notifications','testing'],
-  'Product Manager':           ['okrs','data analysis','user research','roadmapping','ab testing','sql'],
-  'UI/UX Designer':            ['user research','prototyping','design systems','accessibility','motion design','figma'],
-  'Cybersecurity Engineer':    ['threat modelling','zero trust','siem','scripting','cloud security','devsecops'],
-  'QA / Test Engineer':        ['playwright','k6','contract testing','test strategy','shift-left testing','performance testing'],
-  'Embedded Systems Engineer': ['rtos','cmake','unit testing','power management','communication protocols','debugging tools'],
-  'Blockchain Developer':      ['layer 2','zk proofs','defi protocols','security auditing','ipfs','dao governance'],
+  'Software Engineer':         ['rust', 'system design', 'kafka', 'observability', 'grpc'],
+  'Frontend Developer':        ['storybook', 'vitest', 'web components', 'web animations', 'pwa'],
+  'Backend Developer':         ['grpc', 'elasticsearch', 'message queues', 'load balancing', 'rate limiting'],
+  'Full Stack Developer':      ['graphql', 'prisma', 'redis', 'testing', 'state management'],
+  'Data Scientist':            ['pytorch', 'mlflow', 'feature engineering', 'bayesian', 'data visualisation'],
+  'AI/ML Engineer':            ['cuda', 'rag', 'langchain', 'vector databases', 'quantisation'],
+  'Data Engineer':             ['flink', 'delta lake', 'data quality', 'data contracts', 'trino'],
+  'DevOps Engineer':           ['chaos engineering', 'service mesh', 'ebpf', 'slos', 'platform engineering'],
+  'Cloud Engineer':            ['multi-cloud', 'finops', 'cloud security', 'service mesh', 'edge computing'],
+  'Mobile Developer':          ['accessibility', 'deep linking', 'in-app purchases', 'ab testing', 'analytics'],
+  'Product Manager':           ['sql', 'product analytics', 'growth', 'experiment design', 'pricing strategy'],
+  'UI/UX Designer':            ['motion design', 'design tokens', 'component libraries', 'a11y', 'research ops'],
+  'Cybersecurity Engineer':    ['red teaming', 'threat intelligence', 'forensics', 'soar', 'security automation'],
+  'QA / Test Engineer':        ['contract testing', 'chaos testing', 'observability', 'shift-left', 'test coverage'],
+  'Embedded Systems Engineer': ['power management', 'bootloader', 'oscilloscope', 'can bus', 'ota updates'],
+  'Blockchain Developer':      ['zk proofs', 'dao governance', 'cross-chain', 'defi protocols', 'mev'],
 };
 
 const TRENDING_SKILLS = [
-  'typescript','next.js','tailwind','fastapi','kubernetes','terraform',
-  'aws','github actions','prisma','redis','graphql','rust',
-  'machine learning','pytorch','react native','flutter',
+  'typescript', 'next.js', 'tailwind', 'fastapi', 'kubernetes', 'terraform',
+  'aws', 'github actions', 'prisma', 'redis', 'graphql', 'rust',
+  'machine learning', 'pytorch', 'react native', 'flutter', 'llm',
+  'transformers', 'mlops', 'dbt',
 ];
-
-const SUGGESTIONS_MAP = {
-  'react':            ['typescript','redux','next.js','jest','tailwind'],
-  'node.js':          ['express','mongodb','redis','docker','typescript'],
-  'python':           ['fastapi','django','pandas','numpy','docker'],
-  'java':             ['spring','kubernetes','aws','maven','microservices'],
-  'aws':              ['terraform','docker','kubernetes','github actions','linux'],
-  'docker':           ['kubernetes','ci/cd','aws','linux','github actions'],
-  'mongodb':          ['mongoose','redis','node.js','express'],
-  'postgresql':       ['prisma','sql','redis','node.js','docker'],
-  'machine learning': ['python','pytorch','tensorflow','pandas','numpy'],
-  'react native':     ['typescript','redux','expo','firebase'],
-  'flutter':          ['dart','firebase','rest api'],
-};
 
 /* ══════════════════════════════════════════════════════════════
    HELPERS
 ══════════════════════════════════════════════════════════════ */
-const normalise = (text) => text.toLowerCase().replace(/[^a-z0-9.\s]/g, ' ');
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const normalise   = (text) => text.toLowerCase().replace(/[^a-z0-9\s.#+]/g, ' ');
+
+const matchesSkill = (norm, sk) => {
+  const escaped = escapeRegex(sk.toLowerCase());
+  const pattern = sk.includes(' ')
+    ? `(^|\\s)${escaped}(\\s|$)`
+    : `\\b${escaped}\\b`;
+  return new RegExp(pattern, 'i').test(norm);
+};
 
 const detectSkills = (resumeText) => {
   const norm     = normalise(resumeText);
@@ -89,10 +164,7 @@ const detectSkills = (resumeText) => {
   const byDomain = {};
 
   for (const [domain, skills] of Object.entries(SKILL_TAXONOMY)) {
-    const matched = skills.filter(sk => {
-      const escaped = sk.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      return new RegExp(`(^|\\s|[,/])${escaped}(\\s|[,/.]|$)`, 'i').test(norm);
-    });
+    const matched = skills.filter(sk => matchesSkill(norm, sk));
     if (matched.length) {
       byDomain[domain] = matched;
       found.push(...matched);
@@ -101,6 +173,26 @@ const detectSkills = (resumeText) => {
   return { detected: [...new Set(found)], byDomain };
 };
 
+/**
+ * Compute skill gaps per selected role.
+ * growthAreas = union of required skills the resume is missing.
+ */
+const getGrowthAreas = (detectedSkills, targetRoles = []) => {
+  const detected = detectedSkills.map(s => s.toLowerCase());
+
+  const roleGaps = targetRoles.flatMap(role =>
+    (ROLE_REQUIRED_SKILLS[role] || []).filter(s => !detected.includes(s.toLowerCase()))
+  );
+
+  // Also append trending skills not yet on resume
+  const trending = TRENDING_SKILLS.filter(ts => !detected.includes(ts.toLowerCase()));
+
+  return [...new Set([...roleGaps, ...trending])].slice(0, 12);
+};
+
+/**
+ * Suggested = nice-to-have for role that the resume doesn't have yet.
+ */
 const getSuggestions = (detectedSkills, targetRoles = []) => {
   const detected  = detectedSkills.map(s => s.toLowerCase());
   const suggested = new Set();
@@ -110,21 +202,7 @@ const getSuggestions = (detectedSkills, targetRoles = []) => {
       if (!detected.includes(s.toLowerCase())) suggested.add(s);
     });
   }
-  for (const sk of detectedSkills) {
-    (SUGGESTIONS_MAP[sk.toLowerCase()] || []).forEach(c => {
-      if (!detected.includes(c.toLowerCase())) suggested.add(c);
-    });
-  }
-  return [...suggested].slice(0, 12);
-};
-
-const getGrowthAreas = (detectedSkills, targetRoles = []) => {
-  const detected   = detectedSkills.map(s => s.toLowerCase());
-  const roleGrowth = targetRoles
-    .flatMap(role => ROLE_SUGGESTED_SKILLS[role] || [])
-    .filter(s => !detected.includes(s.toLowerCase()));
-  const trending   = TRENDING_SKILLS.filter(ts => !detected.includes(ts.toLowerCase()));
-  return [...new Set([...roleGrowth, ...trending])].slice(0, 10);
+  return [...suggested].slice(0, 10);
 };
 
 const generateInsights = ({ detected, byDomain, suggested, growthAreas, targetRoles }) => {
@@ -134,33 +212,38 @@ const generateInsights = ({ detected, byDomain, suggested, growthAreas, targetRo
 
   if (rolesLabel)
     insights.push(`Analysed against target role(s): ${rolesLabel}.`);
+
   if (domainCount >= 3)
-    insights.push(`You have a diverse skill set spanning ${domainCount} domains — great for full-stack or cross-functional roles.`);
+    insights.push(`You have skills across ${domainCount} domains — great for cross-functional roles.`);
   else if (domainCount === 1)
-    insights.push(`Your skills are focused in ${Object.keys(byDomain)[0]}. Consider broadening into adjacent areas.`);
+    insights.push(`Skills concentrated in ${Object.keys(byDomain)[0]}. Broadening into adjacent areas can help.`);
+
   if (byDomain['Frontend'] && byDomain['Backend'])
-    insights.push('You have both frontend and backend skills — highlight this to stand out for full-stack roles.');
+    insights.push('You have both frontend and backend skills — highlight this for full-stack roles.');
+
   if (byDomain['DevOps & Cloud'])
-    insights.push('Cloud/DevOps skills are highly valued. Mention specific services (e.g. AWS EC2, S3) for better ATS matching.');
+    insights.push('Cloud/DevOps skills stand out. Mention specific services (e.g. AWS EC2, S3, Lambda) for better ATS matching.');
+
   if (byDomain['Data & AI'])
-    insights.push('AI/ML skills are among the fastest-growing in demand. Highlight projects with measurable outcomes.');
+    insights.push('AI/ML skills are in high demand. Highlight projects with measurable outcomes (accuracy, latency, etc.).');
+
   if (growthAreas.length)
-    insights.push(`Trending skills to consider adding: ${growthAreas.slice(0, 4).join(', ')}.`);
+    insights.push(`Key gaps to close for ${rolesLabel || 'your target role'}: ${growthAreas.slice(0, 4).join(', ')}.`);
+
   if (detected.length < 6)
-    insights.push('Your resume lists fewer skills than typical candidates. Expand the skills section with tools and technologies you use daily.');
+    insights.push('Your resume lists fewer skills than typical. Expand the skills section with daily-use tools and technologies.');
+
   if (!insights.length)
-    insights.push('Strong skill profile! Quantify experience with each skill (e.g. "3 years of React") to score higher.');
+    insights.push('Strong skill profile! Quantify experience per skill (e.g. "3 years of React, built 5 production apps") to score higher.');
 
   return insights;
 };
 
 /* ══════════════════════════════════════════════════════════════
    POST /api/skills/analyze
-   Accepts FormData (file upload) OR JSON { resumeText, targetRoles }
 ══════════════════════════════════════════════════════════════ */
 exports.analyzeSkills = async (req, res) => {
   try {
-    // ✅ FIX: Support both file upload (FormData) and plain text (JSON)
     let resumeText = req.body.resumeText || '';
 
     if (!resumeText && req.file) {
@@ -178,6 +261,8 @@ exports.analyzeSkills = async (req, res) => {
       try { targetRoles = JSON.parse(targetRoles); } catch { targetRoles = []; }
     }
 
+    console.log('🎯 skillController — targetRoles:', targetRoles);
+
     const { detected, byDomain } = detectSkills(resumeText);
     const suggested              = getSuggestions(detected, targetRoles);
     const growthAreas            = getGrowthAreas(detected, targetRoles);
@@ -185,19 +270,23 @@ exports.analyzeSkills = async (req, res) => {
     const strongSkills           = detected.filter(s => TRENDING_SKILLS.includes(s.toLowerCase()));
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     // ── Persist to DB ─────────────────────────────────────────
     const userId = req.user?.id || req.user?._id;
     console.log('👤 skillController — userId:', userId);
 
 =======
     console.log('✅ skillController — detected:', detected);
+=======
+    console.log('✅ skillController — detected:', detected.length, 'skills | gaps:', growthAreas.length);
+>>>>>>> 4555d1d27bb82dce0b180a0e7191f255a057099c
 
-    // ── Persist to DB ─────────────────────────────────────────
+    // ── Persist ────────────────────────────────────────────────
     const userId = req.user?.id || req.user?._id;
 >>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
     if (userId) {
       try {
-        const saved = await ResumeAnalysis.findOneAndUpdate(
+        await ResumeAnalysis.findOneAndUpdate(
           { user: userId },
           {
             $set: {
@@ -210,7 +299,6 @@ exports.analyzeSkills = async (req, res) => {
           },
           { upsert: true, new: true, setDefaultsOnInsert: true }
         );
-        console.log('✅ Skills saved to DB, id:', saved._id);
       } catch (saveErr) {
         console.error('❌ Skills DB save error:', saveErr.message);
       }
@@ -234,6 +322,7 @@ exports.analyzeSkills = async (req, res) => {
       byDomain,
       targetRoles,
 <<<<<<< HEAD
+<<<<<<< HEAD
       // Legacy aliases kept for backwards compat
       skills:   detected,
       matched:  strongSkills,
@@ -242,6 +331,9 @@ exports.analyzeSkills = async (req, res) => {
       tips:     insights,
 =======
       // Legacy aliases
+=======
+      // Legacy aliases kept for UI compatibility
+>>>>>>> 4555d1d27bb82dce0b180a0e7191f255a057099c
       skills:    detected,
       matched:   strongSkills,
       suggested,
@@ -263,6 +355,6 @@ exports.analyzeSkills = async (req, res) => {
 >>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
 ══════════════════════════════════════════════════════════════ */
 exports.getTargetRoles = (_req, res) => {
-  const roles = Object.keys(ROLE_SUGGESTED_SKILLS);
+  const roles = Object.keys(ROLE_REQUIRED_SKILLS);
   return res.json({ success: true, data: roles });
 };
