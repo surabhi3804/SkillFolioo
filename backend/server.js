@@ -24,6 +24,7 @@ app.use('/api/ats',       atsRoutes);
 app.use('/api/skills',    skillsRoutes);
 app.use('/api/resume',    resumeParserRoutes);
 app.use('/api/chatbot',   chatbotRoutes);
+app.use("/api/chatbot", require("./routes/chatbot"));
 
 // ─── Test route to verify DB collections ────────────────────
 app.get('/api/debug/collections', async (req, res) => {

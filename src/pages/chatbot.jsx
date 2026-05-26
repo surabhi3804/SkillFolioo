@@ -92,25 +92,40 @@ export default function ChatbotPage({ onUseText }) {
       return;
     }
 
-    chatbotAPI.enhance({ text: msg, context: ctx, tone })
-      .then(data => {
-        setTyping(false);
-        if (!data.success) {
-          setMsgs(p => [...p, mkMsg("bot", "Got it! Can you share a bit more detail? 🎯")]);
-          return;
-        }
-        setMsgs(p => [...p, mkMsg("bot", "✨ Here's a polished version:", data.enhanced, data.metric_tip)]);
-        setHistory(h => [{
-          id:       Date.now(),
-          original: msg,
-          enhanced: data.enhanced,
-          tip:      data.metric_tip,
-          context:  ctx,
-          tone,
-          time:     new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          date:     new Date().toLocaleDateString(),
-        }, ...h]);
-      })
+ chatbotAPI.chat({
+  message: msg,
+  conversationHistory: msgs.map(m => ({
+    role: m.role === "bot" ? "assistant" : "user",
+    content: m.enhanced || m.text,
+  })),
+})
+.then(data => {
+  setTyping(false);
+
+  if (!data.success) {
+    setMsgs(p => [...p, mkMsg("bot", "Something went wrong. Please try again.")]);
+    return;
+  }
+
+  setMsgs(p => [
+    ...p,
+    mkMsg("bot", data.message)
+  ]);
+
+  setHistory(h => [{
+    id: Date.now(),
+    original: msg,
+    enhanced: data.message,
+    context: ctx,
+    tone,
+    time: new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit"
+    }),
+    date: new Date().toLocaleDateString(),
+  }, ...h]);
+})
+    
       .catch(() => {
         setTyping(false);
         setMsgs(p => [...p, mkMsg("bot", "Something went wrong. Make sure the backend is running! 🔧")]);
@@ -162,7 +177,7 @@ export default function ChatbotPage({ onUseText }) {
             <div className="cbot-avatar">🤖</div>
             <div>
               <div className="cbot-name">Folio AI Assistant</div>
-              <div className="cbot-status"><span className="cbot-dot" />NLP Engine Active</div>
+              <div className="cbot-status"><span className="cbot-dot" />AI Assistant Active</div>
             </div>
             <div className="cbot-ctrls">
               <button className="cbot-ctrl-btn" title="Clear chat"
@@ -265,7 +280,6 @@ export default function ChatbotPage({ onUseText }) {
         <div className="cbot-history-panel">
           <div className="cbot-hist-head">
             <div className="cbot-hist-tabs">
-              <button className={`cbot-hist-tab${histTab === "chat" ? " active" : ""}`} onClick={() => setHistTab("chat")}>💬 Info</button>
               <button className={`cbot-hist-tab${histTab === "history" ? " active" : ""}`} onClick={() => setHistTab("history")}>
                 🕐 History {history.length > 0 && <span className="cbot-hist-badge">{history.length}</span>}
               </button>
@@ -278,32 +292,6 @@ export default function ChatbotPage({ onUseText }) {
             )}
           </div>
 
-          {histTab === "chat" ? (
-            <div className="cbot-hist-info">
-              <div className="cbot-info-card">
-                <div className="cbot-info-title">How it works</div>
-                {[
-                  ["1", "Paste informal text",  "Type or paste any experience in plain English"],
-                  ["2", "AI Processing",        "Engine upgrades verbs, removes filler, adds structure"],
-                  ["3", "Review & Use",         "Copy the enhanced version into your resume"],
-                ].map(([n, t, d]) => (
-                  <div key={n} className="cbot-step">
-                    <div className="cbot-step-num">{n}</div>
-                    <div><div className="cbot-step-title">{t}</div><div className="cbot-step-desc">{d}</div></div>
-                  </div>
-                ))}
-              </div>
-              <div className="cbot-info-card dark">
-                <div className="cbot-feat-title">AI Features</div>
-                {["Strong action verb upgrade", "Filler word removal", "Metric detection & tips", "Tone-aware enhancement", "ATS structure formatting", "Session history & export"].map(f => (
-                  <div key={f} className="cbot-feat-item">
-                    <span className="cbot-feat-check">✓</span>
-                    <span className="cbot-feat-text">{f}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
             <div className="cbot-hist-list">
               {history.length === 0 ? (
                 <div className="cbot-hist-empty">
@@ -331,7 +319,7 @@ export default function ChatbotPage({ onUseText }) {
                 ))
               )}
             </div>
-          )}
+          
         </div>
       </div>
     </div>
