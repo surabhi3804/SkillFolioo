@@ -319,11 +319,7 @@ export default function ChatbotPage({ onUseText }) {
                 ))
               )}
             </div>
-<<<<<<< HEAD
           
-=======
-          )}
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
         </div>
       </div>
     </div>

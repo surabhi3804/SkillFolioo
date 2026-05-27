@@ -269,21 +269,10 @@ exports.analyzeSkills = async (req, res) => {
     const insights               = generateInsights({ detected, byDomain, suggested, growthAreas, targetRoles });
     const strongSkills           = detected.filter(s => TRENDING_SKILLS.includes(s.toLowerCase()));
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    // ── Persist to DB ─────────────────────────────────────────
-    const userId = req.user?.id || req.user?._id;
-    console.log('👤 skillController — userId:', userId);
-
-=======
-    console.log('✅ skillController — detected:', detected);
-=======
     console.log('✅ skillController — detected:', detected.length, 'skills | gaps:', growthAreas.length);
->>>>>>> 4555d1d27bb82dce0b180a0e7191f255a057099c
 
     // ── Persist ────────────────────────────────────────────────
     const userId = req.user?.id || req.user?._id;
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
     if (userId) {
       try {
         await ResumeAnalysis.findOneAndUpdate(
@@ -302,18 +291,9 @@ exports.analyzeSkills = async (req, res) => {
       } catch (saveErr) {
         console.error('❌ Skills DB save error:', saveErr.message);
       }
-<<<<<<< HEAD
-    } else {
-      console.warn('⚠️  No userId — skipping DB save. req.user:', req.user);
     }
 
     return res.json({
-      // Primary response shape (matches frontend field names)
-=======
-    }
-
-    return res.json({
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
       detectedSkills:  detected,
       strongSkills,
       suggestedSkills: suggested,
@@ -321,25 +301,12 @@ exports.analyzeSkills = async (req, res) => {
       insights,
       byDomain,
       targetRoles,
-<<<<<<< HEAD
-<<<<<<< HEAD
-      // Legacy aliases kept for backwards compat
-      skills:   detected,
-      matched:  strongSkills,
-      suggested,
-      missing:  growthAreas,
-      tips:     insights,
-=======
-      // Legacy aliases
-=======
       // Legacy aliases kept for UI compatibility
->>>>>>> 4555d1d27bb82dce0b180a0e7191f255a057099c
       skills:    detected,
       matched:   strongSkills,
       suggested,
       missing:   growthAreas,
       tips:      insights,
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
     });
   } catch (err) {
     console.error('analyzeSkills error:', err);
@@ -348,11 +315,7 @@ exports.analyzeSkills = async (req, res) => {
 };
 
 /* ══════════════════════════════════════════════════════════════
-<<<<<<< HEAD
-   GET /api/skills/roles  — return default target roles list
-=======
    GET /api/skills/roles
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
 ══════════════════════════════════════════════════════════════ */
 exports.getTargetRoles = (_req, res) => {
   const roles = Object.keys(ROLE_REQUIRED_SKILLS);

@@ -4,10 +4,7 @@
   "private": true,
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
-<<<<<<< HEAD
     "@google/generative-ai": "^0.24.1",
-=======
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
@@ -26,18 +23,10 @@
     "react-scripts": "^5.0.1"
   },
   "scripts": {
-<<<<<<< HEAD
     "start": "react-scripts start",
     "build": "react-scripts build",
     "postinstall": "chmod +x node_modules/.bin/react-scripts"
   },
-=======
-  "start": "react-scripts start",
-  "build": "react-scripts build",
-  "test": "react-scripts test",
-  "eject": "react-scripts eject"
-},
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
   "browserslist": {
     "production": [
       ">0.2%",

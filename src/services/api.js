@@ -22,8 +22,6 @@ const request = async (method, endpoint, body = null) => {
   return data;
 };
 
-<<<<<<< HEAD
-=======
 /* ─── Helper: FormData requests (for file uploads) ───────────── */
 const requestFormData = async (method, endpoint, formData) => {
   const headers = {};
@@ -42,7 +40,6 @@ const requestFormData = async (method, endpoint, formData) => {
   return data;
 };
 
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
 /* ─── Auth API ───────────────────────────────────────────────── */
 export const authAPI = {
   register: (payload) => request('POST', '/auth/register', payload),
@@ -52,31 +49,16 @@ export const authAPI = {
 
 /* ─── Portfolio API ──────────────────────────────────────────── */
 export const portfolioAPI = {
-<<<<<<< HEAD
-  // GET  /api/portfolio
-  get: () => request('GET', '/portfolio'),
-
-  // PUT  /api/portfolio — save / update portfolio data
-  // Now includes targetRoles in payload so it persists to DB
-  update: (payload) => request('PUT', '/portfolio', payload),
-
-  // POST /api/portfolio/publish
-=======
   get: () => request('GET', '/portfolio'),
 
   update: (payload) => request('PUT', '/portfolio', payload),
 
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
   publish: (templateId, style) => request(
     'POST',
     '/portfolio/publish',
     { templateId: templateId || null, style: style || {} }
   ),
 
-<<<<<<< HEAD
-  // GET /api/portfolio/public/:slug — public, no auth needed
-=======
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
   getPublic: (slug) => request('GET', `/portfolio/public/${slug}`),
 };
 
@@ -84,15 +66,6 @@ export const portfolioAPI = {
 export const atsAPI = {
   /**
    * Score a resume against selected target roles.
-<<<<<<< HEAD
-   * @param {Object}   params
-   * @param {string}   params.resumeText   - Raw text from the resume file
-   * @param {string[]} params.targetRoles  - Roles selected in the UI
-   */
-  score: ({ resumeText, targetRoles = [] }) =>
-    request('POST', '/ats/score', { resumeText, targetRoles }),
-};
-=======
    *
    * Pass EITHER:
    *   { file: File, targetRoles: string[] }   ← preferred (PDF/DOCX/TXT file)
@@ -112,7 +85,6 @@ export const atsAPI = {
   },
 };
 
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
 /* ─── Custom Roles API ───────────────────────────────────────── */
 export const customRolesAPI = {
   getAll: ()          => request('GET',    '/ats/custom-roles'),
@@ -124,19 +96,6 @@ export const customRolesAPI = {
 export const skillsAPI = {
   /**
    * Analyse skills in a resume, tailored to the selected target roles.
-<<<<<<< HEAD
-   * @param {Object}   params
-   * @param {string}   params.resumeText   - Raw text from the resume file
-   * @param {string[]} params.targetRoles  - Roles selected in the UI
-   */
-  analyze: ({ resumeText, targetRoles = [] }) =>
-    request('POST', '/skills/analyze', { resumeText, targetRoles }),
-
-  /**
-   * Fetch the supported target roles list from the backend.
-   * Useful if you want the role list server-driven in future.
-   */
-=======
    *
    * Pass EITHER:
    *   { file: File, targetRoles: string[] }   ← preferred
@@ -153,17 +112,12 @@ export const skillsAPI = {
     return request('POST', '/skills/analyze', { resumeText, targetRoles });
   },
 
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
   getRoles: () => request('GET', '/skills/roles'),
 };
 
 /* ─── Chatbot API ────────────────────────────────────────────── */
 export const chatbotAPI = {
-<<<<<<< HEAD
-  send: (payload) => request('POST', '/chatbot', payload),
-=======
   send:    (payload) => request('POST', '/chatbot',         payload),
->>>>>>> 2c5ac94cc88365feeba81f6e163dad8dcdf46e44
   enhance: (payload) => request('POST', '/chatbot/enhance', payload),
 };
 
