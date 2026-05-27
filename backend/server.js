@@ -11,18 +11,18 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ─── Routes ─────────────────────────────────────────────────
-const authRoutes         = require('./routes/auth');
-const portfolioRoutes    = require('./routes/portfolio');
-const atsRoutes          = require('./routes/ats');
-const skillsRoutes       = require('./routes/skills');
-const resumeParserRoutes = require('./routes/resumeParse');
-const chatbotRoutes      = require('./routes/chatbot');
+const authRoutes        = require('./routes/auth');
+const portfolioRoutes   = require('./routes/portfolio');
+const atsRoutes         = require('./routes/ats');
+const skillsRoutes      = require('./routes/skills');
+const resumeParseRoutes = require('./routes/resumeParse');
+const chatbotRoutes     = require('./routes/chatbot');
 
 app.use('/api/auth',      authRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/ats',       atsRoutes);
 app.use('/api/skills',    skillsRoutes);
-app.use('/api/resume',    resumeParserRoutes);
+app.use('/api/resume',    resumeParseRoutes);  // ← matches the const name above
 app.use('/api/chatbot',   chatbotRoutes);
 
 // ─── Test route to verify DB collections ────────────────────
@@ -48,7 +48,6 @@ mongoose
     console.log('✅ MongoDB Connected to database:', dbName);
     console.log('   Full host:', process.env.MONGO_URI?.split('@')[1]);
 
-    // List existing collections on startup
     const collections = await mongoose.connection.db.listCollections().toArray();
     console.log('📦 Collections in', dbName + ':', collections.map(c => c.name));
 

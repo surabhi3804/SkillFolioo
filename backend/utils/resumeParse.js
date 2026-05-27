@@ -1,12 +1,7 @@
 // backend/utils/resumeParse.js
-const mammoth = require('mammoth');
+const mammoth  = require('mammoth');
+const pdfParse = require('pdf-parse');  // ← plain require, no tricks needed
 
-/**
- * Extracts plain text from a resume file buffer.
- * Supports: PDF, DOC, DOCX, TXT
- *
- * Uses pdf-parse@1.1.1 (stable) for PDF extraction.
- */
 const extractText = async (buffer, mimetype, originalname = '') => {
   const name = originalname.toLowerCase();
 
@@ -15,8 +10,7 @@ const extractText = async (buffer, mimetype, originalname = '') => {
   // ── PDF ──────────────────────────────────────────────────────
   if (mimetype === 'application/pdf' || name.endsWith('.pdf')) {
     try {
-      const pdfParse = require('pdf-parse');
-      const data     = await pdfParse(buffer);
+      const data = await pdfParse(buffer);
       console.log('✅ pdf extracted, length:', data.text?.length);
       console.log('✅ preview:', data.text?.slice(0, 150));
       return data.text || '';

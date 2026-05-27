@@ -1,4 +1,4 @@
-// SkillAnalyticsPage.jsx — full file with pie charts + bar graphs added
+// SkillAnalyticsPage.jsx — Chart.js powered charts (professional upgrade)
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import { TARGET_ROLES, ROLE_SKILLS, ALL_SKILLS } from '../data/staticData';
@@ -10,226 +10,266 @@ import {
 import './SkillAnalyticsPage.css';
 
 /* ═══════════════════════════════════════════════════════════════════
-   CHART HELPERS  — pure Canvas, zero dependencies
+   CHART.JS LOADER — loads once, resolves a promise
 ═══════════════════════════════════════════════════════════════════ */
-
-/** Donut / Pie chart */
-function DonutChart({ segments, size = 180, thickness = 38, label, sublabel }) {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx    = canvas.getContext('2d');
-    const dpr    = window.devicePixelRatio || 1;
-    const px     = size * dpr;
-    canvas.width  = px;
-    canvas.height = px;
-    canvas.style.width  = `${size}px`;
-    canvas.style.height = `${size}px`;
-    ctx.scale(dpr, dpr);
-
-    const cx = size / 2, cy = size / 2, r = size / 2 - 10, inner = r - thickness;
-    const total = segments.reduce((s, seg) => s + seg.value, 0);
-    if (!total) return;
-
-    let start = -Math.PI / 2;
-    // Shadow under ring
-    ctx.shadowColor = 'rgba(0,0,0,0.10)';
-    ctx.shadowBlur  = 10;
-
-    segments.forEach(seg => {
-      const sweep = (seg.value / total) * 2 * Math.PI;
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, start, start + sweep);
-      ctx.arc(cx, cy, inner, start + sweep, start, true);
-      ctx.closePath();
-      ctx.fillStyle = seg.color;
-      ctx.fill();
-      start += sweep;
-    });
-
-    // Centre fill — use page background color (light mode)
-    ctx.shadowBlur = 0;
-    ctx.beginPath();
-    ctx.arc(cx, cy, inner - 2, 0, 2 * Math.PI);
-    // ── CHANGED: was '#12161f' (dark), now white to match light-mode card bg ──
-    ctx.fillStyle = '#ffffff';
-    ctx.fill();
-
-    // Centre text — use dark ink so it's readable on white
-    if (label !== undefined) {
-      // ── CHANGED: was '#f1f5f9' (light text for dark bg), now dark for light bg ──
-      ctx.fillStyle = '#1e293b';
-      ctx.font      = `bold ${size * 0.17}px "Syne", sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(label, cx, sublabel ? cy - size * 0.05 : cy);
-      if (sublabel) {
-        ctx.font      = `${size * 0.085}px "DM Mono", monospace`;
-        ctx.fillStyle = '#64748b';
-        ctx.fillText(sublabel, cx, cy + size * 0.12);
-      }
-    }
-  }, [segments, size, thickness, label, sublabel]);
-
-  return <canvas ref={canvasRef} style={{ display: 'block' }} />;
+let chartJsReady = null;
+function loadChartJs() {
+  if (chartJsReady) return chartJsReady;
+  chartJsReady = new Promise((resolve) => {
+    if (window.Chart) { resolve(window.Chart); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
+    s.onload = () => {
+      // Register center-text plugin once
+      window.Chart.register({
+        id: 'centerText',
+        afterDraw(chart) {
+          const { _centerLabel: label, _centerSub: sub } = chart.config;
+          if (!label) return;
+          const { ctx, chartArea: { top, left, width, height } } = chart;
+          const cx = left + width / 2;
+          const cy = top + height / 2;
+          ctx.save();
+          ctx.fillStyle = getComputedStyle(document.documentElement)
+            .getPropertyValue('--text') || '#1e293b';
+          ctx.font = `bold ${Math.round(width * 0.18)}px "Syne", system-ui, sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(label, cx, sub ? cy - height * 0.08 : cy);
+          if (sub) {
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = `${Math.round(width * 0.095)}px "DM Mono", monospace`;
+            ctx.fillText(sub, cx, cy + height * 0.13);
+          }
+          ctx.restore();
+        },
+      });
+      resolve(window.Chart);
+    };
+    document.head.appendChild(s);
+  });
+  return chartJsReady;
 }
 
-/** Horizontal bar chart */
-function HBarChart({ bars, maxVal, height = 32, gap = 10, labelWidth = 110 }) {
+/* ═══════════════════════════════════════════════════════════════════
+   DONUT CHART
+═══════════════════════════════════════════════════════════════════ */
+function DonutChart({ segments, label, sublabel, size = 160 }) {
   const canvasRef = useRef(null);
-  const totalH    = bars.length * (height + gap) - gap + 2;
+  const chartRef  = useRef(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const dpr   = window.devicePixelRatio || 1;
-    const W     = canvas.offsetWidth || 400;
-    const H     = totalH;
-    canvas.width  = W * dpr;
-    canvas.height = H * dpr;
-    canvas.style.height = `${H}px`;
-    const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, W, H);
+    let alive = true;
+    loadChartJs().then((Chart) => {
+      if (!alive || !canvasRef.current) return;
+      if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
 
-    const trackW = W - labelWidth - 60; // 60px for value label on right
-    const mv     = maxVal || Math.max(...bars.map(b => b.value), 1);
+      const total = segments.reduce((s, g) => s + g.value, 0);
+      const data  = total ? segments.map(s => s.value) : [1];
+      const colors = total ? segments.map(s => s.color) : ['#e2e8f0'];
 
-    bars.forEach((bar, i) => {
-      const y   = i * (height + gap);
-      const pct = bar.value / mv;
-      const fw  = Math.max(pct * trackW, bar.value > 0 ? 4 : 0);
+      const chart = new Chart(canvasRef.current, {
+        type: 'doughnut',
+        data: {
+          labels: segments.map(s => s.label),
+          datasets: [{
+            data, backgroundColor: colors,
+            borderWidth: 3,
+            borderColor: getComputedStyle(document.documentElement)
+              .getPropertyValue('--bg-card') || '#ffffff',
+            hoverOffset: 5,
+          }],
+        },
+        options: {
+          responsive: false,
+          cutout: '72%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => total
+                  ? `${ctx.label}: ${ctx.parsed} (${Math.round(ctx.parsed / total * 100)}%)`
+                  : '',
+              },
+            },
+          },
+          animation: { animateRotate: true, duration: 800 },
+        },
+      });
 
-      // Label (left)
-      ctx.fillStyle    = '#64748b';
-      ctx.font         = `12px "DM Mono", monospace`;
-      ctx.textAlign    = 'right';
-      ctx.textBaseline = 'middle';
-      const labelText  = bar.label.length > 15 ? bar.label.slice(0, 13) + '…' : bar.label;
-      ctx.fillText(labelText, labelWidth - 8, y + height / 2);
-
-      // Track bg
-      ctx.fillStyle = '#f1f5f9';
-      const radius  = height / 2;
-      roundRect(ctx, labelWidth, y, trackW, height, radius);
-      ctx.fill();
-
-      // Fill bar
-      if (fw > 0) {
-        const grad = ctx.createLinearGradient(labelWidth, 0, labelWidth + fw, 0);
-        grad.addColorStop(0, bar.color + 'aa');
-        grad.addColorStop(1, bar.color);
-        ctx.fillStyle = grad;
-        ctx.shadowColor = bar.color + '40';
-        ctx.shadowBlur  = 6;
-        roundRect(ctx, labelWidth, y, fw, height, Math.min(radius, fw / 2));
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      }
-
-      // Value label (right)
-      ctx.fillStyle    = bar.color;
-      ctx.font         = `bold 12px "DM Mono", monospace`;
-      ctx.textAlign    = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(bar.valueLabel ?? bar.value, labelWidth + trackW + 8, y + height / 2);
+      chart.config._centerLabel = label !== undefined ? String(label) : '';
+      chart.config._centerSub   = sublabel || '';
+      chart.update();
+      chartRef.current = chart;
     });
-  }, [bars, maxVal, height, gap, labelWidth, totalH]);
+    return () => {
+      alive = false;
+      if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
+    };
+  }, [JSON.stringify(segments), label, sublabel]);
 
   return (
     <canvas
       ref={canvasRef}
-      style={{ display: 'block', width: '100%', height: totalH }}
+      width={size}
+      height={size}
+      style={{ display: 'block', width: size, height: size }}
     />
   );
 }
 
-/** Grouped bar chart for market demand */
-function GroupedBarChart({ groups, height = 160, barW = 18, gap = 8 }) {
+/* ═══════════════════════════════════════════════════════════════════
+   HORIZONTAL BAR CHART
+═══════════════════════════════════════════════════════════════════ */
+function HBarChart({ bars, maxVal, barThickness = 22, gap = 10 }) {
   const canvasRef = useRef(null);
+  const chartRef  = useRef(null);
+  const wrapH = bars.length * (barThickness + gap) + 56;
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const dpr = window.devicePixelRatio || 1;
-    const W   = canvas.offsetWidth || 500;
-    const H   = height + 48; // bottom axis labels
-    canvas.width  = W * dpr;
-    canvas.height = H * dpr;
-    canvas.style.height = `${H}px`;
-    const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, W, H);
+    let alive = true;
+    loadChartJs().then((Chart) => {
+      if (!alive || !canvasRef.current) return;
+      if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
 
-    if (!groups.length) return;
-
-    const seriesCount = groups[0].values.length;
-    const groupW      = seriesCount * (barW + gap) - gap + 12;
-    const totalGroupsW = groups.length * groupW;
-    const offsetX      = (W - totalGroupsW) / 2;
-    const maxVal       = 100;
-    const chartH       = height;
-
-    // Horizontal grid lines
-    [25, 50, 75, 100].forEach(v => {
-      const y = chartH - (v / maxVal) * chartH;
-      ctx.beginPath();
-      ctx.moveTo(0, y); ctx.lineTo(W, y);
-      ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1; ctx.stroke();
-      ctx.fillStyle = '#94a3b8'; ctx.font = '9px DM Mono, monospace';
-      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.fillText(v + '%', 2, y);
-    });
-
-    groups.forEach((group, gi) => {
-      const gx = offsetX + gi * groupW;
-      group.values.forEach((val, si) => {
-        const bh   = (val.value / maxVal) * chartH;
-        const x    = gx + si * (barW + gap);
-        const y    = chartH - bh;
-        const grad = ctx.createLinearGradient(x, y, x, chartH);
-        grad.addColorStop(0, val.color);
-        grad.addColorStop(1, val.color + '55');
-        ctx.fillStyle = grad;
-        ctx.shadowColor = val.color + '40'; ctx.shadowBlur = 5;
-        roundRect(ctx, x, y, barW, bh, 4);
-        ctx.fill();
-        ctx.shadowBlur = 0;
+      chartRef.current = new Chart(canvasRef.current, {
+        type: 'bar',
+        data: {
+          labels: bars.map(b => b.label),
+          datasets: [{
+            data: bars.map(b => b.value),
+            backgroundColor: bars.map(b => b.color),
+            borderRadius: barThickness / 2,
+            borderSkipped: false,
+            barThickness,
+          }],
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => bars[ctx.dataIndex].valueLabel
+                  ? `${bars[ctx.dataIndex].valueLabel}`
+                  : `${ctx.parsed.x}`,
+              },
+            },
+          },
+          scales: {
+            x: { display: false, grid: { display: false }, max: maxVal || Math.max(...bars.map(b => b.value), 1) * 1.15 },
+            y: {
+              grid: { display: false },
+              ticks: {
+                font: { size: 12, family: '"DM Mono", monospace' },
+                color: '#64748b',
+              },
+            },
+          },
+          animation: { duration: 700 },
+        },
       });
-
-      // Group label (bottom)
-      ctx.fillStyle = '#64748b';
-      ctx.font = '10px DM Mono, monospace';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-      const labelText = group.label.length > 8 ? group.label.slice(0, 7) + '…' : group.label;
-      ctx.fillText(labelText, gx + groupW / 2 - 6, chartH + 6);
     });
-  }, [groups, height, barW, gap]);
+    return () => {
+      alive = false;
+      if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
+    };
+  }, [JSON.stringify(bars), maxVal]);
 
-  return <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: height + 48 }} />;
+  return (
+    <div style={{ position: 'relative', height: wrapH, width: '100%' }}>
+      <canvas ref={canvasRef} role="img" aria-label="Horizontal bar chart" />
+    </div>
+  );
 }
 
-/** Utility: rounded rectangle path */
-function roundRect(ctx, x, y, w, h, r) {
-  r = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.arcTo(x + w, y, x + w, y + r, r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-  ctx.lineTo(x + r, y + h);
-  ctx.arcTo(x, y + h, x, y + h - r, r);
-  ctx.lineTo(x, y + r);
-  ctx.arcTo(x, y, x + r, y, r);
-  ctx.closePath();
+/* ═══════════════════════════════════════════════════════════════════
+   GROUPED BAR CHART — Market demand by category
+═══════════════════════════════════════════════════════════════════ */
+function GroupedBarChart({ groups }) {
+  const canvasRef = useRef(null);
+  const chartRef  = useRef(null);
+
+  useEffect(() => {
+    let alive = true;
+    loadChartJs().then((Chart) => {
+      if (!alive || !canvasRef.current || !groups.length) return;
+      if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
+
+      chartRef.current = new Chart(canvasRef.current, {
+        type: 'bar',
+        data: {
+          labels: groups.map(g => g.label.length > 9 ? g.label.slice(0, 8) + '…' : g.label),
+          datasets: [
+            {
+              label: 'High',
+              data: groups.map(g => g.values[0]?.value ?? 0),
+              backgroundColor: '#34d399',
+              borderRadius: 5,
+              borderSkipped: false,
+            },
+            {
+              label: 'Medium',
+              data: groups.map(g => g.values[1]?.value ?? 0),
+              backgroundColor: '#fbbf24',
+              borderRadius: 5,
+              borderSkipped: false,
+            },
+            {
+              label: 'Low',
+              data: groups.map(g => g.values[2]?.value ?? 0),
+              backgroundColor: '#f87171',
+              borderRadius: 5,
+              borderSkipped: false,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { mode: 'index', intersect: false },
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 11, family: '"DM Mono", monospace' }, color: '#64748b' },
+            },
+            y: {
+              max: 100,
+              grid: { color: '#f1f5f9' },
+              ticks: {
+                callback: v => v + '%',
+                font: { size: 10 },
+                color: '#94a3b8',
+              },
+            },
+          },
+          animation: { duration: 700 },
+        },
+      });
+    });
+    return () => {
+      alive = false;
+      if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
+    };
+  }, [JSON.stringify(groups)]);
+
+  return (
+    <div style={{ position: 'relative', height: 200, width: '100%' }}>
+      <canvas ref={canvasRef} role="img" aria-label="Grouped bar chart of market demand by category" />
+    </div>
+  );
 }
 
-/* Palette */
+/* ═══════════════════════════════════════════════════════════════════
+   PALETTE & CATEGORY MAP
+═══════════════════════════════════════════════════════════════════ */
 const CAT_COLORS = {
-  'Languages': '#0891b2',
+  'Languages':      '#0891b2',
   'Frontend':       '#a78bfa',
   'Backend':        '#34d399',
   'Data & AI':      '#fbbf24',
@@ -237,12 +277,8 @@ const CAT_COLORS = {
   'Tools':          '#fb923c',
   'Other':          '#94a3b8',
 };
-
 const DEMAND_COLORS = { high: '#34d399', medium: '#fbbf24', low: '#f87171' };
 
-/* ═══════════════════════════════════════════════════════════════════
-   SKILL CATEGORY DETECTOR
-═══════════════════════════════════════════════════════════════════ */
 const SKILL_CAT_MAP = {
   'Languages':      ['python','javascript','typescript','java','c++','go','rust','swift','kotlin','scala','php','ruby','dart','r'],
   'Frontend':       ['react','vue.js','next.js','html5','css3','tailwind css','tailwindcss','svelte','angular','redux','webpack','vite'],
@@ -251,7 +287,6 @@ const SKILL_CAT_MAP = {
   'DevOps & Cloud': ['docker','kubernetes','aws','gcp','azure','ci/cd','terraform','ansible','jenkins','prometheus','linux','helm'],
   'Tools':          ['git','jira','figma','postman','agile','linux','notion','confluence','vs code','intellij'],
 };
-
 function categorizeSkill(skill) {
   const sl = skill.toLowerCase();
   for (const [cat, list] of Object.entries(SKILL_CAT_MAP)) {
@@ -261,10 +296,27 @@ function categorizeSkill(skill) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   CHART PANEL — rendered inside the analytics page
+   CHART LEGEND ROW (reusable)
+═══════════════════════════════════════════════════════════════════ */
+function LegendRow({ items }) {
+  return (
+    <div className="chart-legend-row">
+      {items.map(([label, color]) => (
+        <span key={label} className="chart-legend-item">
+          <span className="chart-legend-dot" style={{ background: color }} />
+          {label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CHART PANEL
 ═══════════════════════════════════════════════════════════════════ */
 function ChartPanel({ userSkills, roleSkills, presentSkills, missingSkills, matchPct, localRole, marketResult, roleLabel }) {
-  /* ── 1. Skill category breakdown (donut) ── */
+
+  /* 1. Skill category breakdown (donut) */
   const catCounts = {};
   userSkills.forEach(s => {
     const c = categorizeSkill(s);
@@ -274,51 +326,52 @@ function ChartPanel({ userSkills, roleSkills, presentSkills, missingSkills, matc
     .sort((a, b) => b[1] - a[1])
     .map(([cat, count]) => ({ label: cat, value: count, color: CAT_COLORS[cat] || '#94a3b8' }));
 
-  /* ── 2. Role match donut ── */
+  /* 2. Role match donut */
   const matchSegments = localRole && roleSkills.length
     ? [
-        { label: 'Have',    value: presentSkills.length, color: '#34d399' },
-        { label: 'Missing', value: missingSkills.length, color: '#f87171' },
+        { label: 'You have', value: presentSkills.length, color: '#34d399' },
+        { label: 'Missing',  value: missingSkills.length, color: '#f87171' },
       ]
     : [{ label: 'No role', value: 1, color: '#e2e8f0' }];
 
-  /* ── 3. Category skill bars (how many you have per category vs role needs) ── */
-  const catBars = Object.entries(CAT_COLORS).slice(0, 6).map(([cat, color]) => {
-    const have = userSkills.filter(s => categorizeSkill(s) === cat).length;
-    return { label: cat, value: have, color, valueLabel: `${have}` };
-  }).filter(b => b.value > 0);
+  /* 3. Category skill bars */
+  const catBars = Object.entries(CAT_COLORS)
+    .map(([cat, color]) => ({
+      label: cat,
+      value: userSkills.filter(s => categorizeSkill(s) === cat).length,
+      color,
+    }))
+    .filter(b => b.value > 0);
 
-  /* ── 4. Role required skills — have vs missing bars ── */
+  /* 4. Role skill bars */
   const roleMatchBars = localRole && roleSkills.length
     ? [
-        { label: 'You have',  value: presentSkills.length, color: '#34d399', valueLabel: `${presentSkills.length}/${roleSkills.length}` },
-        { label: 'Missing',   value: missingSkills.length, color: '#f87171', valueLabel: `${missingSkills.length}` },
-        { label: 'Extra',     value: Math.max(0, userSkills.length - presentSkills.length), color: '#6ee7f7', valueLabel: `${Math.max(0, userSkills.length - presentSkills.length)}` },
+        { label: 'You have', value: presentSkills.length, color: '#34d399', valueLabel: `${presentSkills.length}/${roleSkills.length}` },
+        { label: 'Missing',  value: missingSkills.length, color: '#f87171', valueLabel: String(missingSkills.length) },
+        { label: 'Extra',    value: Math.max(0, userSkills.length - presentSkills.length), color: '#6ee7f7', valueLabel: String(Math.max(0, userSkills.length - presentSkills.length)) },
       ]
     : [];
 
-  /* ── 5. Market demand grouped bar chart ── */
-  const demandGroups = marketResult
-    ? (() => {
-        const grouped = {};
-        (marketResult.marketDemand || []).forEach(item => {
-          const cat = categorizeSkill(item.skill);
-          if (!grouped[cat]) grouped[cat] = { high: 0, medium: 0, low: 0, total: 0 };
-          grouped[cat][item.demand]++;
-          grouped[cat].total++;
-        });
-        return Object.entries(grouped).slice(0, 7).map(([cat, counts]) => ({
-          label: cat,
-          values: [
-            { value: Math.round((counts.high   / counts.total) * 100), color: '#34d399' },
-            { value: Math.round((counts.medium / counts.total) * 100), color: '#fbbf24' },
-            { value: Math.round((counts.low    / counts.total) * 100), color: '#f87171' },
-          ],
-        }));
-      })()
-    : [];
+  /* 5. Market demand grouped bar */
+  const demandGroups = marketResult ? (() => {
+    const grouped = {};
+    (marketResult.marketDemand || []).forEach(item => {
+      const cat = categorizeSkill(item.skill);
+      if (!grouped[cat]) grouped[cat] = { high: 0, medium: 0, low: 0, total: 0 };
+      grouped[cat][item.demand]++;
+      grouped[cat].total++;
+    });
+    return Object.entries(grouped).slice(0, 7).map(([cat, counts]) => ({
+      label: cat,
+      values: [
+        { value: Math.round((counts.high   / counts.total) * 100), color: '#34d399' },
+        { value: Math.round((counts.medium / counts.total) * 100), color: '#fbbf24' },
+        { value: Math.round((counts.low    / counts.total) * 100), color: '#f87171' },
+      ],
+    }));
+  })() : [];
 
-  /* ── 6. Market demand horizontal bars ── */
+  /* 6. Market demand horizontal bars */
   const demandBars = marketResult
     ? (marketResult.marketDemand || []).map(item => ({
         label:      item.skill,
@@ -333,7 +386,7 @@ function ChartPanel({ userSkills, roleSkills, presentSkills, missingSkills, matc
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-      {/* ── Row 1: two donuts side by side ── */}
+      {/* Row 1: two donuts */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
 
         {/* Skill mix donut */}
@@ -345,16 +398,15 @@ function ChartPanel({ userSkills, roleSkills, presentSkills, missingSkills, matc
             <DonutChart
               segments={catSegments.length ? catSegments : [{ label: 'Skills', value: 1, color: '#6ee7f7' }]}
               size={148}
-              thickness={34}
               label={userSkills.length}
               sublabel="skills"
             />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
               {catSegments.map(seg => (
                 <div key={seg.label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: seg.color, flexShrink: 0, display: 'inline-block' }} />
+                  <span style={{ width: 9, height: 9, borderRadius: '50%', background: seg.color, flexShrink: 0, display: 'inline-block' }} />
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{seg.label}</span>
-                  <span style={{ fontSize: '0.7rem', color: seg.color, marginLeft: 'auto', paddingLeft: 8 }}>{seg.value}</span>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 600, color: seg.color, marginLeft: 'auto', paddingLeft: 8 }}>{seg.value}</span>
                 </div>
               ))}
             </div>
@@ -371,19 +423,18 @@ function ChartPanel({ userSkills, roleSkills, presentSkills, missingSkills, matc
               <DonutChart
                 segments={matchSegments}
                 size={148}
-                thickness={34}
                 label={`${matchPct}%`}
                 sublabel={roleLabel || 'match'}
               />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {[
-                  { label: 'You have',  value: presentSkills.length, color: '#34d399' },
-                  { label: 'Missing',   value: missingSkills.length, color: '#f87171' },
+                  { label: 'You have', value: presentSkills.length, color: '#34d399' },
+                  { label: 'Missing',  value: missingSkills.length, color: '#f87171' },
                 ].map(item => (
                   <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, flexShrink: 0, display: 'inline-block' }} />
+                    <span style={{ width: 9, height: 9, borderRadius: '50%', background: item.color, flexShrink: 0, display: 'inline-block' }} />
                     <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.label}</span>
-                    <span style={{ fontSize: '0.7rem', color: item.color, marginLeft: 'auto', paddingLeft: 8 }}>{item.value}</span>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 600, color: item.color, marginLeft: 'auto', paddingLeft: 8 }}>{item.value}</span>
                   </div>
                 ))}
                 <div style={{ marginTop: 6, fontSize: '0.68rem', color: 'var(--text-light)', fontStyle: 'italic' }}>
@@ -400,48 +451,35 @@ function ChartPanel({ userSkills, roleSkills, presentSkills, missingSkills, matc
         </div>
       </div>
 
-      {/* ── Row 2: skills per category (hbar) ── */}
+      {/* Row 2: skills per category */}
       {catBars.length > 0 && (
         <div className="card">
-          <h3 className="card-section-title" style={{ fontSize: '0.78rem', marginBottom: 16 }}>
+          <h3 className="card-section-title" style={{ fontSize: '0.78rem', marginBottom: 4 }}>
             <BarChart3 size={15} /> Skills per Category
           </h3>
-          <HBarChart bars={catBars} maxVal={Math.max(...catBars.map(b => b.value), 1)} height={26} gap={10} labelWidth={108} />
+          <HBarChart bars={catBars} maxVal={Math.max(...catBars.map(b => b.value), 1)} barThickness={22} />
         </div>
       )}
 
-      {/* ── Row 3: role skill breakdown (hbar) ── */}
+      {/* Row 3: role skill breakdown */}
       {roleMatchBars.length > 0 && (
         <div className="card">
-          <h3 className="card-section-title" style={{ fontSize: '0.78rem', marginBottom: 16 }}>
+          <h3 className="card-section-title" style={{ fontSize: '0.78rem', marginBottom: 4 }}>
             <CheckCircle size={15} /> Skills for <span style={{ color: 'var(--primary)', marginLeft: 4 }}>{roleLabel}</span>
           </h3>
-          <HBarChart bars={roleMatchBars} maxVal={roleSkills.length || 1} height={26} gap={12} labelWidth={90} />
+          <HBarChart bars={roleMatchBars} maxVal={roleSkills.length || 1} barThickness={22} />
         </div>
       )}
 
-      {/* ── Row 4: market demand bars (shown only after analysis) ── */}
+      {/* Row 4: market demand bars */}
       {demandBars.length > 0 && (
         <>
           <div className="card">
-            <h3 className="card-section-title" style={{ fontSize: '0.78rem', marginBottom: 16 }}>
+            <h3 className="card-section-title" style={{ fontSize: '0.78rem', marginBottom: 4 }}>
               <TrendingUp size={15} /> Your Skills — Market Demand Score
             </h3>
-            <HBarChart
-              bars={demandBars}
-              maxVal={100}
-              height={24}
-              gap={8}
-              labelWidth={120}
-            />
-            {/* Legend */}
-            <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
-              {[['High demand', '#34d399'], ['Medium', '#fbbf24'], ['Lower', '#f87171']].map(([label, color]) => (
-                <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-                  <span style={{ width: 8, height: 8, borderRadius: 2, background: color, display: 'inline-block' }} />{label}
-                </span>
-              ))}
-            </div>
+            <HBarChart bars={demandBars} maxVal={100} barThickness={20} />
+            <LegendRow items={[['High demand','#34d399'],['Medium','#fbbf24'],['Lower','#f87171']]} />
           </div>
 
           {demandGroups.length > 0 && (
@@ -449,26 +487,18 @@ function ChartPanel({ userSkills, roleSkills, presentSkills, missingSkills, matc
               <h3 className="card-section-title" style={{ fontSize: '0.78rem', marginBottom: 16 }}>
                 <BarChart3 size={15} /> Demand Distribution by Category
               </h3>
-              <GroupedBarChart groups={demandGroups} height={150} barW={16} gap={6} />
-              {/* Legend */}
-              <div style={{ display: 'flex', gap: 16, marginTop: 4 }}>
-                {[['High', '#34d399'], ['Medium', '#fbbf24'], ['Low', '#f87171']].map(([label, color]) => (
-                  <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-                    <span style={{ width: 8, height: 8, borderRadius: 2, background: color, display: 'inline-block' }} />{label}
-                  </span>
-                ))}
-              </div>
+              <GroupedBarChart groups={demandGroups} />
+              <LegendRow items={[['High','#34d399'],['Medium','#fbbf24'],['Low','#f87171']]} />
             </div>
           )}
         </>
       )}
-
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   MAIN PAGE  (original logic preserved, charts wired in)
+   MAIN PAGE
 ═══════════════════════════════════════════════════════════════════ */
 const SkillAnalyticsPage = () => {
   const { resumeData, setResumeData, targetRole, setTargetRole } = useApp();
@@ -489,17 +519,16 @@ const SkillAnalyticsPage = () => {
   const [customRoleJD,   setCustomRoleJD]   = useState('');
   const [savingRole,     setSavingRole]     = useState(false);
 
-  /* ── Derived ── */
-  const userSkills       = resumeData.skills || [];
-  const userSkillsLower  = userSkills.map(s => s.toLowerCase());
+  const userSkills            = resumeData.skills || [];
+  const userSkillsLower       = userSkills.map(s => s.toLowerCase());
   const predefinedSkillsLower = ALL_SKILLS.map(s => s.toLowerCase());
   const customAddedSkills     = userSkills.filter(s => !predefinedSkillsLower.includes(s.toLowerCase()));
-  const roleSkills       = localRole && localRole !== 'other' ? ROLE_SKILLS[localRole] || [] : [];
-  const presentSkills    = roleSkills.filter(s => userSkillsLower.includes(s.toLowerCase()));
-  const missingSkills    = roleSkills.filter(s => !userSkillsLower.includes(s.toLowerCase()));
-  const extraSkills      = userSkills.filter(s => !roleSkills.map(r => r.toLowerCase()).includes(s.toLowerCase()));
-  const matchPct         = roleSkills.length > 0 ? Math.round((presentSkills.length / roleSkills.length) * 100) : 0;
-  const roleLabel        = TARGET_ROLES.find(r => r.id === localRole)?.label || customRoles.find(r => r._id === localRole)?.label || '';
+  const roleSkills            = localRole && localRole !== 'other' ? ROLE_SKILLS[localRole] || [] : [];
+  const presentSkills         = roleSkills.filter(s => userSkillsLower.includes(s.toLowerCase()));
+  const missingSkills         = roleSkills.filter(s => !userSkillsLower.includes(s.toLowerCase()));
+  const extraSkills           = userSkills.filter(s => !roleSkills.map(r => r.toLowerCase()).includes(s.toLowerCase()));
+  const matchPct              = roleSkills.length > 0 ? Math.round((presentSkills.length / roleSkills.length) * 100) : 0;
+  const roleLabel             = TARGET_ROLES.find(r => r.id === localRole)?.label || customRoles.find(r => r._id === localRole)?.label || '';
 
   const suggestions = query.length > 1
     ? ALL_SKILLS.filter(s => s.toLowerCase().includes(query.toLowerCase()) && !userSkillsLower.includes(s.toLowerCase())).slice(0, 8)
@@ -542,7 +571,6 @@ const SkillAnalyticsPage = () => {
     } catch (e) { console.error(e); }
   };
 
-  /* Market data (unchanged) */
   const MARKET_DATA = {
     'Python':{ demand:'high',trend:'rising'},'JavaScript':{ demand:'high',trend:'stable'},'TypeScript':{ demand:'high',trend:'rising'},'React':{ demand:'high',trend:'stable'},'Node.js':{ demand:'high',trend:'stable'},'Next.js':{ demand:'high',trend:'rising'},'SQL':{ demand:'high',trend:'stable'},'AWS':{ demand:'high',trend:'rising'},'Docker':{ demand:'high',trend:'rising'},'Kubernetes':{ demand:'high',trend:'rising'},'Git':{ demand:'high',trend:'stable'},'REST APIs':{ demand:'high',trend:'stable'},'GraphQL':{ demand:'medium',trend:'rising'},'Java':{ demand:'high',trend:'stable'},'Go':{ demand:'high',trend:'rising'},'Rust':{ demand:'medium',trend:'rising'},'C++':{ demand:'medium',trend:'stable'},'Vue.js':{ demand:'medium',trend:'stable'},'TailwindCSS':{ demand:'high',trend:'rising'},'CSS3':{ demand:'medium',trend:'stable'},'HTML5':{ demand:'medium',trend:'stable'},'FastAPI':{ demand:'high',trend:'rising'},'Django':{ demand:'medium',trend:'stable'},'TensorFlow':{ demand:'high',trend:'rising'},'PyTorch':{ demand:'high',trend:'rising'},'Pandas':{ demand:'high',trend:'stable'},'NumPy':{ demand:'medium',trend:'stable'},'LLMs':{ demand:'high',trend:'rising'},'GCP':{ demand:'high',trend:'rising'},'CI/CD':{ demand:'high',trend:'rising'},'Terraform':{ demand:'high',trend:'rising'},'Figma':{ demand:'high',trend:'rising'},'Agile':{ demand:'medium',trend:'stable'},'Jira':{ demand:'medium',trend:'stable'},'Postman':{ demand:'medium',trend:'stable'},'MongoDB':{ demand:'medium',trend:'stable'},'PostgreSQL':{ demand:'high',trend:'rising'},'Redis':{ demand:'high',trend:'rising'},'Linux':{ demand:'high',trend:'stable'},'Spark':{ demand:'medium',trend:'stable'},'Kafka':{ demand:'medium',trend:'rising'},'Microservices':{ demand:'high',trend:'stable'},'Tailwind CSS':{ demand:'high',trend:'rising'},'AI/ML':{ demand:'high',trend:'rising'},'Machine Learning':{ demand:'high',trend:'rising'},'Deep Learning':{ demand:'high',trend:'rising'},'Data Analysis':{ demand:'high',trend:'rising'},
   };
@@ -581,7 +609,7 @@ const SkillAnalyticsPage = () => {
     setMarketLoading(true); setMarketError(''); setMarketResult(null); setAiTab('market');
     setTimeout(() => {
       try {
-        const roleName   = TARGET_ROLES.find(r => r.id === localRole)?.label || 'Software Developer';
+        const roleName     = TARGET_ROLES.find(r => r.id === localRole)?.label || 'Software Developer';
         const marketDemand = userSkills.map(skill => {
           const key = Object.keys(MARKET_DATA).find(k => k.toLowerCase() === skill.toLowerCase());
           return key ? { skill, ...MARKET_DATA[key] } : { skill, demand: 'medium', trend: 'stable' };
@@ -589,9 +617,9 @@ const SkillAnalyticsPage = () => {
         const scoreMap   = { high: 100, medium: 60, low: 25 };
         const rawScore   = marketDemand.reduce((sum, s) => sum + (scoreMap[s.demand] || 60), 0) / marketDemand.length;
         const roleBonus  = localRole && localRole !== 'other' ? Math.min(20, Math.round((presentSkills.length / Math.max(roleSkills.length, 1)) * 20)) : 0;
-        const overallMarketFit = Math.min(100, Math.round(rawScore * 0.8 + roleBonus));
-        const roleRecs   = ROLE_RECOMMENDATIONS[localRole] || ['TypeScript','Docker','PostgreSQL','CI/CD','Redis'];
-        const missingHighDemand = roleRecs.filter(s => !userSkillsLower.includes(s.toLowerCase())).slice(0, 5);
+        const overallMarketFit   = Math.min(100, Math.round(rawScore * 0.8 + roleBonus));
+        const roleRecs           = ROLE_RECOMMENDATIONS[localRole] || ['TypeScript','Docker','PostgreSQL','CI/CD','Redis'];
+        const missingHighDemand  = roleRecs.filter(s => !userSkillsLower.includes(s.toLowerCase())).slice(0, 5);
         setMarketResult({ overallMarketFit, recommendation: generateRecommendation(overallMarketFit, roleName, missingHighDemand.length), marketDemand, missingHighDemand });
       } catch (err) { setMarketError('Analysis failed. Please try again.'); console.error(err); }
       finally { setMarketLoading(false); }
@@ -621,10 +649,9 @@ const SkillAnalyticsPage = () => {
         </div>
 
         <div className="analytics-layout">
-          {/* ═══ LEFT SIDEBAR (unchanged) ═══ */}
+          {/* ═══ LEFT SIDEBAR ═══ */}
           <aside className="analytics-sidebar">
 
-            {/* Current skills */}
             <div className="card">
               <h3 className="card-section-title"><Sparkles size={17} /> Your Skills ({userSkills.length})</h3>
               <div className="skill-input-wrap" style={{ position: 'relative', marginBottom: 12 }}>
@@ -662,7 +689,6 @@ const SkillAnalyticsPage = () => {
               )}
             </div>
 
-            {/* Role selector */}
             <div className="card">
               <h3 className="card-section-title"><Target size={17} /> Target Role</h3>
               <div className="analytics-roles">
@@ -701,9 +727,8 @@ const SkillAnalyticsPage = () => {
               )}
             </div>
 
-            {/* AI Market Analysis */}
             <div className="card">
-              <h3 className="card-section-title"><Zap size={17} /> AI Market Analysis</h3>
+              <h3 className="card-section-title"><Zap size={17} /> Market Analysis</h3>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 12 }}>
                 Compare your skills with real market demand.
               </p>
@@ -717,8 +742,6 @@ const SkillAnalyticsPage = () => {
 
           {/* ═══ RIGHT MAIN ═══ */}
           <div className="analytics-main">
-
-            {/* Tabs */}
             <div className="analytics-tabs">
               <button className={`analytics-tab ${aiTab === 'gap' ? 'active' : ''}`} onClick={() => setAiTab('gap')}>📊 Skill Gap Analysis</button>
               <button className={`analytics-tab ${aiTab === 'market' ? 'active' : ''}`} onClick={() => setAiTab('market')}>📈 Market Demand</button>
@@ -727,7 +750,7 @@ const SkillAnalyticsPage = () => {
               </button>
             </div>
 
-            {/* ── TAB: Gap Analysis (unchanged) ── */}
+            {/* TAB: Gap Analysis */}
             {aiTab === 'gap' && (
               <>
                 {localRole && localRole !== 'other' && (
@@ -751,14 +774,12 @@ const SkillAnalyticsPage = () => {
                     </div>
                   </div>
                 )}
-
                 {localRole && presentSkills.length > 0 && (
                   <div className="card animate-fadeIn" style={{ animationDelay: '0.1s' }}>
                     <h3 className="card-section-title"><CheckCircle size={17} color="var(--success)" /> Skills You Already Have</h3>
                     <div className="chip-grid">{presentSkills.map(s => <span key={s} className="analytics-chip present-chip">{s}</span>)}</div>
                   </div>
                 )}
-
                 {localRole && missingSkills.length > 0 && (
                   <div className="card animate-fadeIn" style={{ animationDelay: '0.15s' }}>
                     <h3 className="card-section-title"><AlertCircle size={17} color="var(--warning)" /> Skills to Add for Better Match</h3>
@@ -773,7 +794,6 @@ const SkillAnalyticsPage = () => {
                     <p className="add-skill-hint">Click any skill to add it to your resume</p>
                   </div>
                 )}
-
                 <div className="card animate-fadeIn" style={{ animationDelay: '0.2s' }}>
                   <h3 className="card-section-title"><BarChart3 size={17} /> Browse Skills by Category</h3>
                   <p className="rec-subtitle">Click any skill to add it to your resume.</p>
@@ -812,7 +832,6 @@ const SkillAnalyticsPage = () => {
                     )}
                   </div>
                 </div>
-
                 {!localRole && (
                   <div className="card analytics-empty">
                     <BarChart3 size={44} className="empty-icon" />
@@ -823,7 +842,7 @@ const SkillAnalyticsPage = () => {
               </>
             )}
 
-            {/* ── TAB: Market Demand (unchanged) ── */}
+            {/* TAB: Market Demand */}
             {aiTab === 'market' && (
               <>
                 {!marketResult && !marketLoading && (
@@ -881,46 +900,41 @@ const SkillAnalyticsPage = () => {
               </>
             )}
 
-            {/* ── TAB: Visual Overview ── */}
+            {/* TAB: Visual Overview */}
             {aiTab === 'charts' && (
-              userSkills.length === 0
-                ? (
-                  <div className="card analytics-empty">
-                    <BarChart3 size={44} className="empty-icon" />
-                    <h3>No skills to visualize yet</h3>
-                    <p>Add skills using the panel on the left — charts will appear here instantly.</p>
+              userSkills.length === 0 ? (
+                <div className="card analytics-empty">
+                  <BarChart3 size={44} className="empty-icon" />
+                  <h3>No skills to visualize yet</h3>
+                  <p>Add skills using the panel on the left — charts will appear here instantly.</p>
+                </div>
+              ) : (
+                <div className="animate-fadeIn">
+                  <div className="charts-tip-banner">
+                    <span className="charts-tip-icon">💡</span>
+                    <span className="charts-tip-text">
+                      {!localRole
+                        ? 'Select a target role on the left to unlock role-match charts.'
+                        : !marketResult
+                        ? 'Run "Analyze Market Demand" to unlock market demand charts.'
+                        : 'All charts are live — add or remove skills and they update instantly.'}
+                    </span>
                   </div>
-                )
-                : (
-                  <div className="animate-fadeIn">
-                    {/* Tip banner */}
-                    <div style={{ background: 'rgba(124,58,237,0.05)', border: '1px solid rgba(124,58,237,0.15)', borderRadius: 10, padding: '10px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ fontSize: '1rem' }}>💡</span>
-                      <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                        {!localRole
-                          ? 'Select a target role on the left to unlock role-match charts.'
-                          : !marketResult
-                          ? 'Run "Analyze Market Demand" to unlock market demand charts.'
-                          : 'All charts are live — add or remove skills and they update instantly.'}
-                      </span>
-                    </div>
-
-                    <ChartPanel
-                      userSkills={userSkills}
-                      roleSkills={roleSkills}
-                      presentSkills={presentSkills}
-                      missingSkills={missingSkills}
-                      matchPct={matchPct}
-                      localRole={localRole}
-                      marketResult={marketResult}
-                      roleLabel={roleLabel}
-                    />
-                  </div>
-                )
+                  <ChartPanel
+                    userSkills={userSkills}
+                    roleSkills={roleSkills}
+                    presentSkills={presentSkills}
+                    missingSkills={missingSkills}
+                    matchPct={matchPct}
+                    localRole={localRole}
+                    marketResult={marketResult}
+                    roleLabel={roleLabel}
+                  />
+                </div>
+              )
             )}
-
-          </div>{/* end analytics-main */}
-        </div>{/* end analytics-layout */}
+          </div>
+        </div>
       </div>
     </div>
   );
