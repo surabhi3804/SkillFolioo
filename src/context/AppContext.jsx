@@ -178,6 +178,20 @@ export const AppProvider = ({ children }) => {
     await portfolioAPI.update(payload);
   };
 
+  // ── Derived single-value aliases for SkillAnalyticsPage & ATSScorePage ──
+  // These pages use targetRole/setTargetRole and jobDescription/setJobDescription.
+  // We bridge them to the targetRoles array so all APIs stay in sync.
+  const targetRole       = targetRoles[0] || '';
+  const setTargetRole    = (val) => setTargetRoles(val ? [val] : []);
+
+  // jobDescription is stored as the second element of targetRoles array
+  const jobDescription    = targetRoles[1] || '';
+  const setJobDescription = (val) => setTargetRoles(prev => {
+    const next = [...prev];
+    next[1] = val;
+    return next;
+  });
+
   return (
     <AppContext.Provider value={{
       isLoggedIn, login, loginWithBackend, registerWithBackend, logout, user,
@@ -186,8 +200,12 @@ export const AppProvider = ({ children }) => {
       selectedTemplate, setSelectedTemplate,
       resumeStyle, setResumeStyle,
 
-      // ── targetRoles (replaces jobDescription + targetRole) ──
+      // ── targetRoles array (used by portfolio save, etc.) ──
       targetRoles, setTargetRoles,
+
+      // ── single-value aliases (used by SkillAnalyticsPage & ATSScorePage) ──
+      targetRole, setTargetRole,
+      jobDescription, setJobDescription,
 
       selectedPortfolioTemplate, setSelectedPortfolioTemplate,
       portfolioStyle, setPortfolioStyle,
