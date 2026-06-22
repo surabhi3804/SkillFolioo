@@ -1,14 +1,16 @@
-// backend/routes/chatbot.js
-const express  = require("express");
-const router   = express.Router();
+const express = require("express");
+const router  = express.Router();
 const { protect } = require("../middleware/auth");
 const {
+  chat,
   enhance,
   getHistory,
   deleteHistory,
   clearHistory,
 } = require("../controllers/chatbotController");
 
+router.post("/chat",          chat);
+router.post("/enhance",       enhance);
 // Enhance — optionally protected (saves history if logged in)
 router.post("/enhance",  enhance);
 

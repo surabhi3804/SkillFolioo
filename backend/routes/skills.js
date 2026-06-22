@@ -1,7 +1,7 @@
 // backend/routes/skills.js
-const express  = require('express');
-const router   = express.Router();
-const multer   = require('multer');
+const express     = require('express');
+const router      = express.Router();
+const multer      = require('multer');
 const { protect } = require('../middleware/auth');
 const { analyzeSkills, getTargetRoles } = require('../controllers/skillController');
 
@@ -23,10 +23,7 @@ const upload = multer({
   },
 });
 
-// POST /api/skills/analyze — accepts file OR JSON body
 router.post('/analyze', protect, upload.single('resume'), analyzeSkills);
-
-// GET /api/skills/roles
 router.get('/roles', protect, getTargetRoles);
 
 module.exports = router;
